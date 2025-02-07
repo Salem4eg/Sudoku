@@ -41,6 +41,9 @@ void Cell::paintEvent(QPaintEvent * event)
 	case Cell::Highlighted:
 		painter.setBrush(QBrush(QColor("darkgray")));
 		break;
+	case Cell::Highlighted_active:
+		painter.setBrush(QBrush(QColor("yellow")));
+		break;
 	default:
 		painter.setBrush(QBrush(QColor("white")));
 		break;
@@ -64,6 +67,7 @@ void Cell::paintEvent(QPaintEvent * event)
 	}
 
 	painter.setPen(Qt::black);
+	painter.setBrush(Qt::NoBrush);
 
 	// Відмалювання не правильного числа
 	if (is_wrong())
@@ -134,7 +138,7 @@ void Cell::toggle_wrong_state(int number)
 }
 
 
-void Cell::set_highlighted_state()
+void Cell::highlight_cell()
 {
 	cell_state = Highlighted;
 	update();
@@ -146,10 +150,23 @@ void Cell::set_default_state()
 	update();
 }
 
-void Cell::set_highlighted_number(int number)
+void Cell::highlight_as_active_cell()
 {
+	cell_state = Highlighted_active;
+	update();
+}
+
+void Cell::highlight_number(int number)
+{
+	if (number == -1)
+	{
+		highlighted_number = -1;
+		update();
+
+		return;
+	}
+
 	highlighted_number = number - 1;
-	cell_state = Highlighted;
 	update();
 }
 

@@ -9,7 +9,7 @@ class Cell : public QPushButton
 
 	enum State
 	{
-		Default, Wrong, Highlighted
+		Default, Wrong, Highlighted, Highlighted_active
 	};
 
 
@@ -24,12 +24,15 @@ public:
 	void add_candidate(int number);
 	void remove_candidate(int number);
 	void set_number(int number);
-	void set_highlighted_number(int number);
+	void highlight_number(int number);
 
 	void toggle_wrong_state(int number = -1);
 
-	void set_highlighted_state();
+	void highlight_cell();
+	void highlight_as_active_cell();
 	void set_default_state();
+	
+
 
 	bool is_finished();
 	bool is_wrong();

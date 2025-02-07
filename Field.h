@@ -42,6 +42,8 @@ private:
 	void set_cells_default_style();
 
 	QList<QList<Cell *>> field;
+	QHash<int, QList<Cell *>> cells_by_number;
+	QHash<int, QList<Cell *>> cells_by_candidate;
 	Cell * active_cell;
 	bool notepad_mode;
 	QList<QList<int>> completed_field;

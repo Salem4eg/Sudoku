@@ -74,7 +74,7 @@ Play_menu::Play_menu(QWidget *parent)
 	field = new Field(center_menu_part);
 	center_menu_part_layout->addWidget(field, 0, Qt::AlignCenter);
 
-
+	
 
 	// нижня частина
 	auto * lower_menu_part = new QWidget;
