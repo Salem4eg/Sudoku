@@ -69,11 +69,27 @@ Play_menu::Play_menu(QWidget *parent)
 	auto * center_menu_part = new QWidget;
 	center_menu_part->setStyleSheet("background-color: gray");
 
-	auto * center_menu_part_layout = new QHBoxLayout(center_menu_part);
+	auto * center_menu_part_layout = new QVBoxLayout(center_menu_part);
 
 	field = new Field(center_menu_part);
-	center_menu_part_layout->addWidget(field, 0, Qt::AlignCenter);
 
+
+	// Можливо в майбутньому все-таки додати це?
+	/*auto * numbers_widget = new QWidget;
+
+	auto * numbers_layout = new QHBoxLayout(numbers_widget);
+
+	for (int number = 1; number <= 9; number++)
+	{
+		auto * number_label = new QLabel(QString::number(number));
+
+		numbers_layout->addWidget(number_label, 0);
+
+		numbers_labels.push_back(number_label);
+	}
+
+	center_menu_part_layout->addWidget(numbers_widget, 0, Qt::AlignCenter);*/
+	center_menu_part_layout->addWidget(field, 0, Qt::AlignCenter);
 	
 
 	// нижня частина

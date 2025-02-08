@@ -93,6 +93,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Appearance_menu.cpp" />
+    <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="Main_menu.cpp" />
     <ClCompile Include="Play_menu.cpp" />
     <ClCompile Include="Records.cpp" />
@@ -116,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Result.h" />
+    <ClInclude Include="GameInfo.h" />
     <ClInclude Include="Sudoku_generator.h" />
     <ClInclude Include="Solver.h" />
     <ClInclude Include="Test_utilities.h" />

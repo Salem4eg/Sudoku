@@ -51,7 +51,7 @@ private:
 	QLabel * time_label;
 	QLabel * errors_label;
 	QLabel * hints_label;
-	QList<QLabel *> numbers_label;
+	QList<QLabel *> numbers_labels;
 };
 
 // При натискані на "нова гра" має показуватись вибір складності (легка, нормальна, складна, надскладна) 

@@ -70,6 +70,9 @@
     <ClCompile Include="Result.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Field.h">
@@ -111,6 +114,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Test_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
