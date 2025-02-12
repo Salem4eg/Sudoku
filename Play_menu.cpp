@@ -5,9 +5,6 @@ Play_menu::Play_menu(QWidget *parent)
 {
 	auto * play_menu_layout = new QVBoxLayout(this);
 
-
-
-
 	// верхня частина екрану
 	auto * upper_menu_part = new QWidget;
 
@@ -62,9 +59,6 @@ Play_menu::Play_menu(QWidget *parent)
 
 
 
-
-
-
 	// центральна частина
 	auto * center_menu_part = new QWidget;
 	center_menu_part->setStyleSheet("background-color: gray");
@@ -111,7 +105,7 @@ Play_menu::Play_menu(QWidget *parent)
 	play_menu_layout->addWidget(lower_menu_part);
 
 
-	// тут зв'язки.
+
 	connect(notepad_mode_button, &QPushButton::pressed, [=]()
 		{
 			field->toggle_notepad_mode();
@@ -134,7 +128,14 @@ Play_menu::Play_menu(QWidget *parent)
 				notepad_mode_button->setText("Блокнот вимкнено");
 		});
 
-	connect(back_button, &QPushButton::pressed, [=]() { emit leave(); });
+
+	connect(back_button, &QPushButton::pressed, [=]() 
+		{ 
+			emit leave();
+			emit game_saved(true);
+
+			save_game();
+		});
 
 	connect(hint_button, &QPushButton::pressed, [=]()
 		{
@@ -144,14 +145,12 @@ Play_menu::Play_menu(QWidget *parent)
 			if (!field->show_hint())
 				return;
 
-			hints++;
-
-			hints_label->setText("Підказок: " + QString::number(hints) + " / 3");
+			increase_hints();
 		});
 
 	connect(field, &Field::wrong_number, [=]()
 		{
-			update_errors();
+			increase_errors();
 
 			if (errors > 3)
 				game_lost();
@@ -164,11 +163,14 @@ Play_menu::Play_menu(QWidget *parent)
 
 	timer = new QTimer(this);
 
-	connect(timer, &QTimer::timeout, this, &Play_menu::update_time);
+	connect(timer, &QTimer::timeout, this, &Play_menu::increase_time);
 
 	result_window = new Result(this);
 	
-	connect(result_window, &Result::back_to_menu, [=]() { emit leave(); });
+	connect(result_window, &Result::back_to_menu, [=]() 
+		{
+			emit leave(); 
+		});
 
 	connect(result_window, &Result::play_again, [=]() { start_game(); });
 
@@ -185,50 +187,63 @@ void Play_menu::start_game(Difficulties game_difficulty)
 	fill_field();
 
 	time_elapsed = 0;
-	time_label->setText("Час: 00:00");
+	update_time_label();
 
 	errors = 0;
-	errors_label->setText("Помилок: 0 / 3");
+	update_errors_label();
 
 	hints = 0;
-	hints_label->setText("Підказок: 0 / 3");
+	update_hints_label();
 
 	difficulty = game_difficulty;
-
-	switch (game_difficulty)
-	{
-	case Difficulties::easy:
-		difficulty_label->setText("Складність: легка");
-		break;
-	case Difficulties::normal:
-		difficulty_label->setText("Складність: нормальна");
-		break;
-	case Difficulties::hard:
-		difficulty_label->setText("Складність: складна");
-		break;
-	case Difficulties::ultra_hard:
-		difficulty_label->setText("Складність: надскладна");
-		break;
-	}
+	update_difficulty_label();
 
 	timer->start(1000);
 
-	emit field_ready();
-
 	notepad_mode = false;
+	need_to_save_game = true;
+
+	emit field_ready();
 }
 
-void Play_menu::update_errors()
+void Play_menu::continue_game()
+{
+	load_game();
+
+	update_time_label();
+	update_errors_label();
+	update_hints_label();
+	update_difficulty_label();
+
+	timer->start(1000);
+
+	notepad_mode = false;
+	need_to_save_game = true;
+
+	emit field_ready();
+}
+
+void Play_menu::increase_errors()
 {
 	errors++;
 
+	update_errors_label();
+}
+
+void Play_menu::update_errors_label()
+{
 	errors_label->setText("Помилок: " + QString::number(errors) + " / 3");
 }
 
-void Play_menu::update_time()
+void Play_menu::increase_time()
 {
 	time_elapsed++;
 
+	update_time_label();
+}
+
+void Play_menu::update_time_label()
+{
 	QString time;
 	// Більше години мучається
 	if (time_elapsed >= 3600)
@@ -264,13 +279,46 @@ void Play_menu::update_time()
 	time_label->setText("Час: " + time);
 }
 
+void Play_menu::increase_hints()
+{
+	hints++;
+
+	update_hints_label();
+}
+
+void Play_menu::update_hints_label()
+{
+	hints_label->setText("Підказок: " + QString::number(hints) + " / 3");
+}
+
+void Play_menu::update_difficulty_label()
+{
+	switch (difficulty)
+	{
+	case Difficulties::easy:
+		difficulty_label->setText("Складність: легка");
+		break;
+	case Difficulties::normal:
+		difficulty_label->setText("Складність: нормальна");
+		break;
+	case Difficulties::hard:
+		difficulty_label->setText("Складність: складна");
+		break;
+	case Difficulties::ultra_hard:
+		difficulty_label->setText("Складність: надскладна");
+		break;
+	}
+}
+
 void Play_menu::game_lost()
 {
 	timer->stop();
 
 	Record result(time_elapsed, errors, hints, difficulty);
 
-	save_record(result);
+	emit game_saved(false);
+	
+	need_to_save_game = false;
 
 	result_window->show_lost();
 }
@@ -281,9 +329,19 @@ void Play_menu::game_won()
 
 	Record result(time_elapsed, errors, hints, difficulty);
 
-	save_record(result);
+	emit new_record(result);
+	emit game_saved(false);
+
+	need_to_save_game = false;
 
 	result_window->show_won(result);
+}
+
+bool Play_menu::has_saved_game()
+{
+	if (game_info.is_saved_game_file_empty())
+		return false;
+	return true;
 }
 
 void Play_menu::fill_field()
@@ -312,7 +370,35 @@ void Play_menu::change_field_colors(QColor field_color, QColor field_border)
 	field->change_field_theme(field_color, field_border);
 }
 
-void Play_menu::save_record(Record& record)
+void Play_menu::save_game()
 {
-	// Зберігання рекорду
+	// need_to_save_game залежить від того, чи гравець вже пройшов судоку, а тому його не треба зберігати, чи ні
+	if (!need_to_save_game)
+	{
+		game_info.clear_saved_game_file();
+		return;
+	}
+
+	auto numbers_and_notes = field->get_field();
+	auto completed_field = field->get_completed_field();
+
+	game_info.save_game(numbers_and_notes.first, numbers_and_notes.second, { time_elapsed, errors, hints, difficulty }, completed_field);
+}
+
+void Play_menu::load_game()
+{
+	QList<QList<int>> numbers { 9, QList<int>(9,0)};
+	QList<QList<int>> completed_field { 9, QList<int>(9,0)};
+	QList<QList<QList<int>>> notes { 9, QList<QList<int>>(9, QList<int>(9,0)) };
+
+	Record record;
+
+	game_info.load_game(numbers, notes, record, completed_field);
+
+	field->load_field(numbers, notes, completed_field);
+
+	time_elapsed = record.time;
+	errors = record.errors;
+	hints = record.hints;
+	difficulty = record.difficulty;
 }

@@ -18,9 +18,7 @@ Main_menu::Main_menu(QWidget* parent)
 	exit_button = new QPushButton("Вийти");
 
 	connect(play_button, &QPushButton::pressed, [=]() { emit play_new_game(); });
-	// Продовжити гру переробити))
-	connect(continue_game_button, &QPushButton::pressed, [=]() { emit play_new_game(); });
-	//
+	connect(continue_game_button, &QPushButton::pressed, [=]() { emit continue_game(); });
 	connect(personal_best_button, &QPushButton::pressed, [=]() { emit show_personal_recods(); });
 	connect(appearance_button, &QPushButton::pressed, [=]() { emit show_appearance_menu(); });
 	connect(guide_button, &QPushButton::pressed, [=]() { emit show_guide(); });
@@ -58,6 +56,8 @@ Main_menu::Main_menu(QWidget* parent)
 	main_menu_layout->addLayout(game_name_layout);
 	main_menu_layout->addLayout(buttons_layout);
 	main_menu_layout->addLayout(space_layout);
+
+
 }
 
 Main_menu::~Main_menu()

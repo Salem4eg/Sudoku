@@ -230,6 +230,13 @@ void Field::keyPressEvent(QKeyEvent* event)
 
 			cells_by_number[number].push_back(active_cell);
 
+			int row = active_cell->get_coords().x();
+			int col = active_cell->get_coords().y();
+
+			uncompleted_field[row][col] = number;
+
+			set_cells_highlighting_style();
+
 			finished_cells++;
 			if (finished_cells == 81)
 				emit finished_field();
@@ -274,6 +281,13 @@ bool Field::show_hint()
 	active_cell->set_number(number);
 
 	cells_by_number[number].push_back(active_cell);
+
+	int row = active_cell->get_coords().x();
+	int col = active_cell->get_coords().y();
+
+	uncompleted_field[row][col] = number;
+
+	set_cells_highlighting_style();
 
 	finished_cells++;
 
@@ -337,11 +351,13 @@ QList<QList<Cell *>> Field::get_cells()
 	return field;
 }
 
-void Field::load_field(QList<QList<int>> numbers, QList<QList<QList<int>>> notes)
+void Field::load_field(QList<QList<int>> numbers, QList<QList<QList<int>>> notes, QList<QList<int>> completed)
 {
 	clear();
 
 	finished_cells = 0;
+	uncompleted_field = numbers;
+	completed_field = completed;
 
 	for (int row = 0; row < 9; row++)
 	{
@@ -382,4 +398,9 @@ QPair<QList<QList<int>>, QList<QList<QList<int>>>> Field::get_field()
 	}
 
 	return { uncompleted_field, notes };
+}
+
+QList<QList<int>> Field::get_completed_field()
+{
+	return completed_field;
 }

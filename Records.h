@@ -6,16 +6,16 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include "Structures.h"
+#include "GameInfo.h"
 
 class Records : public QWidget
 {
 	Q_OBJECT
 
 public slots:
-	// діставатиме рекорди з бази даних
-	void load_records(QList<QList<QList<Record>>>& records_from_database);
 	// отримувати рекорд під час гри
 	void get_new_record(Record record);
+	void save_records();
 
 signals:
 	void leave();
@@ -24,9 +24,10 @@ public:
 	Records(QWidget *parent = nullptr);
 	~Records();
 
-	const QList<QList<QList<Record>>>& get_records() const;
+
 private:
 
+	void load_records();
 	void add_record(const Record& record);
 	// Якщо в категорії пусто, то можна написати текст "Поки що тут пусто"
 	void change_current_records();
@@ -42,5 +43,8 @@ private:
 
 	QVBoxLayout * records_value_layout;
 
+	// records поділяється на складність, а складність поділяється на категорію (без помилок + без підказок, без підказок, без помилок, усі рекорди)
 	QList<QList<QList<Record>>> records;
+
+	GameInfo game_info;
 };

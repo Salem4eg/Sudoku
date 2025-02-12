@@ -19,7 +19,8 @@ class GUI : public QMainWindow
 	Q_OBJECT
 
 public slots:
-	void show_play_menu();
+	void play_new_game();
+	void continue_game();
 	void show_main_menu();
 	void show_records_menu();
 	void show_appearance_menu();
@@ -29,7 +30,8 @@ public slots:
 public:
 	GUI(QWidget* parent = nullptr);
 	~GUI();
-
+protected:
+	void closeEvent(QCloseEvent * event) override;
 private:
 	void set_button_style(QPushButton* button);
 

@@ -3,16 +3,12 @@
 #include <algorithm>
 
 Records::Records(QWidget* parent)
-	: QWidget(parent)
+	: QWidget(parent), current_difficulty(hard), current_category(everything_included), hints_allowed(true), errors_allowed(true)
 {
+
 	records = QList<QList<QList<Record>>>(4, QList<QList<Record>>(4));
-	current_difficulty = hard;
-	current_category = everything_included;
-	hints_allowed = true;
-	errors_allowed = true;
 
 	auto* main_layout = new QVBoxLayout(this);
-
 
 	auto* upper_part = new QWidget;
 	upper_part->setStyleSheet("background-color: gray");
@@ -91,24 +87,7 @@ Records::Records(QWidget* parent)
 	main_layout->addWidget(central_part, 8);
 
 
-
-
-	
-	Record record_hints_included		{ 5000000, 0, 1, hard };
-	Record record_errors_included		{ 5000000, 1, 0, hard };
-	Record record_everything_included	{ 3600000, 1, 1, hard };
-	Record record_nothing_included		{ 4500000, 0, 0, hard };
-
-	
-	for (int i = 0; i < 10; i++)
-	{
-		get_new_record(record_hints_included);
-		get_new_record(record_errors_included);
-		get_new_record(record_everything_included);
-		get_new_record(record_nothing_included);
-	}
-
-	change_category();
+	load_records();
 
 	// Зробити зв'язок з кнопками, щоб без помилок, без підказок, складність були зв'язані з лямбда-функціями, які змінять складність/дозвіл, і використають change_current_records()
 	// для дозволів додатково використати change_category() перед change_current_records()
@@ -136,6 +115,8 @@ Records::Records(QWidget* parent)
 
 			change_category();
 		});
+
+
 }
 
 Records::~Records()
@@ -151,16 +132,15 @@ void Records::add_record(const Record& record)
 	auto* record_layout = new QHBoxLayout(record_widget);
 
 
-	int time_in_seconds = record.time / 1000;
-	int time_seconds = time_in_seconds % 60;
-	int time_minutes = time_in_seconds / 60 % 60;
+	int time_seconds = record.time % 60;
+	int time_minutes = record.time / 60 % 60;
 
 	QString time_str = QString::number(time_minutes) + ":" + QString::number(time_seconds);
 
 
-	if (time_in_seconds / 60 >= 60)
+	if (record.time / 60 >= 60)
 	{
-		int time_hours = time_in_seconds / 60 / 60;
+		int time_hours = record.time / 60 / 60;
 
 		time_str = QString::number(time_hours) + ":" + time_str;
 	}
@@ -199,8 +179,28 @@ void Records::change_current_records()
 {
 	clear_record_widgets();
 
-	for (auto& record : records[current_difficulty][current_category])
+	if (current_category != everything_included)
+	{
+		for (auto& record : records[current_difficulty][current_category])
+			add_record(record);
+
+		return;
+	}
+
+	// То є криндж
+	QList<Record> all_records;
+
+	for (auto& category : records[current_difficulty])
+	{
+		for (auto& record : category)
+			all_records.push_back(record);
+	}
+
+	std::sort(all_records.begin(), all_records.end());
+
+	for (auto& record : all_records)
 		add_record(record);
+
 }
 
 void Records::clear_record_widgets()
@@ -238,30 +238,29 @@ void Records::get_new_record(Record record)
 			records[record.difficulty][category].pop_back();
 	}
 
-
-	if (category != everything_included)
-	{
-		if (records[record.difficulty][everything_included].size() < 10 || records[record.difficulty][everything_included].last().time > record.time)
-		{
-			records[record.difficulty][everything_included].push_back(record);
-
-			std::sort(records[record.difficulty][everything_included].begin(), records[record.difficulty][everything_included].end());
-
-			while (records[record.difficulty][everything_included].size() > 10)
-				records[record.difficulty][everything_included].pop_back();
-		}
-	}
-
-
-	if (category == current_category)
+	if (category == current_category || current_category == everything_included)
 		change_current_records();
 
 }
 
-// Додати до кожної категорії найшвидші рекорди, які підходять під ту категорію. Гарантовано щонайбільше 10 рекордів на одну категорію.
-void Records::load_records(QList<QList<QList<Record>>>& records_from_database)
+void Records::load_records()
 {
-	records = records_from_database;
+	QList<Record> unfiltered_records = game_info.get_records();
+
+	for (auto& record : unfiltered_records)
+	{
+		bool has_errors = record.errors > 0;
+		bool used_hints = record.hints > 0;
+
+		if (has_errors && !used_hints)
+			records[record.difficulty][Categories::only_errors_included].push_back(record);
+		else if (used_hints && !has_errors)
+			records[record.difficulty][Categories::only_hints_included].push_back(record);
+		else if (!used_hints && !has_errors)
+			records[record.difficulty][Categories::nothing_included].push_back(record);
+		else
+			records[record.difficulty][Categories::everything_included].push_back(record);
+	}
 }
 
 void Records::set_difficulty(Difficulties difficulty)
@@ -271,8 +270,8 @@ void Records::set_difficulty(Difficulties difficulty)
 	change_current_records();
 }
 
-const QList<QList<QList<Record>>>& Records::get_records() const
+void Records::save_records()
 {
-	return records;
+	game_info.save_records(records);
 }
 

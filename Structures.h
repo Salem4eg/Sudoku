@@ -21,7 +21,7 @@ struct Record
 	int hints;
 	Difficulties difficulty;
 
-	Record(int time, int errors, int hints, Difficulties difficulty) : time(time), errors(errors), hints(hints), difficulty(difficulty)
+	Record(int time = 0, int errors = 0, int hints = 0, Difficulties difficulty = Difficulties::easy) : time(time), errors(errors), hints(hints), difficulty(difficulty)
 	{
 	}
 

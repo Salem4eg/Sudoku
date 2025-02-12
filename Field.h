@@ -30,8 +30,9 @@ public:
 	void clear();
 	bool show_hint();
 
-	void load_field(QList<QList<int>> numbers, QList<QList<QList<int>>> notes);
+	void load_field(QList<QList<int>> numbers, QList<QList<QList<int>>> notes, QList<QList<int>> completed);
 	QPair<QList<QList<int>>, QList<QList<QList<int>>>> get_field();
+	QList<QList<int>> get_completed_field();
 	
 protected:
 	void keyPressEvent(QKeyEvent * event) override;
