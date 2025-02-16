@@ -253,71 +253,78 @@ void Field::keyPressEvent(QKeyEvent* event)
 		return;
 	}
 
-	// Обробка натискання чисел
-	if (event->key() >= Qt::Key::Key_1 && event->key() <= Qt::Key::Key_9)
+	// Ігноруємо натискання, що нам не потрібні
+	if (event->key() < Qt::Key::Key_1 || event->key() > Qt::Key::Key_9)
+		return;
+
+	int number = event->key() - 48;
+
+	if (active_cell->is_wrong())
 	{
-		int number = event->key() - 48;
+		active_cell->toggle_wrong_state();
+		return;
+	}
 
-		if (active_cell->is_wrong())
-		{
-			active_cell->toggle_wrong_state();
-			return;
-		}
-
-		if (notepad_mode)
-		{
-			if (!active_cell->is_candidate_noted(number))
-			{
-				active_cell->add_candidate(number);
-				cells_by_candidate[number].push_back(active_cell);
-			}
-			else
-			{
-				active_cell->remove_candidate(number);
-				cells_by_candidate[number].removeOne(active_cell);
-			}
-
-			return;
-		}
-
-		if (is_correct_number(number, active_cell->get_coords()))
-		{
-			for (int candidate : active_cell->get_candidates())
-				cells_by_candidate[candidate].removeOne(active_cell);
-
-			active_cell->set_number(number);
-
-			cells_by_number[number].push_back(active_cell);
-
-			int row = active_cell->get_coords().x();
-			int col = active_cell->get_coords().y();
-
-			uncompleted_field[row][col] = number;
-
-			clear_invalid_candidates();
-
-			set_cells_highlighting_style();
-
-			placed_count[number - 1]++;
-			if (placed_count[number - 1] == 9)
-				emit number_finished(number);
-
-			finished_cells++;
-			if (finished_cells == 81)
-				emit finished_field();
-		}
-		else
+	if (notepad_mode)
+	{
+		if (!active_cell->is_candidate_noted(number))
 		{
 			int x = active_cell->get_coords().x();
 			int y = active_cell->get_coords().y();
 
-			active_cell->toggle_wrong_state(number);
+			if (is_valid_candidate(number,x,y))
+			{
+				active_cell->add_candidate(number);
+				cells_by_candidate[number].push_back(active_cell);
+			}
+		}
+		else
+		{
+			active_cell->remove_candidate(number);
+			cells_by_candidate[number].removeOne(active_cell);
+		}
 
-			// Якщо гравець поставив число, яке вже є на рядку\стовпці\квадраті, а тобто не підходяще число, то помилка за неуважність не зараховується
-			if (is_valid_candidate(number, x, y))
-				emit wrong_number();
-		}	
+		return;
 	}
+
+	if (is_correct_number(number, active_cell->get_coords()))
+	{
+		for (int candidate : active_cell->get_candidates())
+			cells_by_candidate[candidate].removeOne(active_cell);
+
+		active_cell->set_number(number);
+
+		cells_by_number[number].push_back(active_cell);
+
+		int row = active_cell->get_coords().x();
+		int col = active_cell->get_coords().y();
+
+		uncompleted_field[row][col] = number;
+
+		clear_invalid_candidates();
+
+		set_cells_highlighting_style();
+
+		placed_count[number - 1]++;
+		if (placed_count[number - 1] == 9)
+			emit number_finished(number);
+
+		finished_cells++;
+		if (finished_cells == 81)
+			emit finished_field();
+	}
+	else
+	{
+		int x = active_cell->get_coords().x();
+		int y = active_cell->get_coords().y();
+
+		active_cell->toggle_wrong_state(number);
+
+		// Якщо гравець поставив число, яке вже є на рядку\стовпці\квадраті, а тобто не підходяще число, то помилка за неуважність не зараховується
+		if (is_valid_candidate(number, x, y))
+			emit wrong_number();
+	}	
+	
 }
 
 void Field::toggle_notepad_mode()
