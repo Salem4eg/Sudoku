@@ -2,7 +2,7 @@
 #include <QShortcut>
 
 Field::Field(QWidget* parent)
-	: QWidget(parent), notepad_mode(false), active_cell(nullptr), finished_cells(0)
+	: QWidget(parent), notepad_mode(false), active_cell(nullptr), finished_cells(0), placed_count(9,0), auto_fill_candidates_at_start(true), auto_remove_invalid_candidates(true)
 {
 	setStyleSheet("background-color: gray");
 
@@ -93,8 +93,18 @@ void Field::set_active_cell(Cell* cell)
 // Вимкнення підсвітки клітинок
 void Field::set_cells_default_style()
 {
+	if (!active_cell)
+		return;
+
 	int cell_row = active_cell->get_coords().x();
 	int cell_col = active_cell->get_coords().y();
+
+	if (active_cell->is_finished())
+	{
+		int number = active_cell->get_number();
+
+		unhighlight_number(number);
+	}
 
 	for (int row = 0; row < 9; row++)
 	{
@@ -120,22 +130,7 @@ void Field::set_cells_default_style()
 		}
 	}
 
-
-	if (active_cell->is_finished())
-	{
-		int number = active_cell->get_number();
-
-		for (auto& cell : cells_by_number[number])
-			cell->set_default_state();
-
-		for (auto& cell : cells_by_candidate[number])
-		{
-			cell->highlight_number(-1);
-		}
-	}
-
 	active_cell->set_default_state();
-	
 }
 
 // Підсвітка клітинок, які бачать активну клітинку
@@ -143,6 +138,13 @@ void Field::set_cells_highlighting_style()
 {
 	int cell_row = active_cell->get_coords().x();
 	int cell_col = active_cell->get_coords().y();
+
+	// По однаковому числу
+	if (active_cell->is_finished() || highlighted_number != -1)
+	{
+		int number = active_cell->get_number();
+		highlight_number(number);		
+	}
 
 	// Підсвітка клітинок на одному рядку з активною клітинкою
 	for (int row = 0; row < 9; row++)
@@ -171,22 +173,69 @@ void Field::set_cells_highlighting_style()
 		}
 	}
 
-	// По однаковому числу
-	if (active_cell->is_finished())
-	{
-		int number = active_cell->get_number();
-
-		for (auto& cell : cells_by_number[number])
-			cell->highlight_cell();
-
-		for (auto& cell : cells_by_candidate[number])
-			cell->highlight_number(number);
-	}
+	
 
 	active_cell->highlight_as_active_cell();
 }
 
+void Field::fill_candidates()
+{
+	for (int row = 0; row < 9; row++)
+	{
+		for (int col = 0; col < 9; col++)
+		{
+			if (field[row][col]->is_finished())
+				continue;
 
+			for (int number = 1; number <= 9; number++)
+			{
+				if (is_valid_candidate(number, row, col))
+					field[row][col]->add_candidate(number);
+			}
+		}
+	}
+}
+
+bool Field::is_valid_candidate(int number, int cell_row, int cell_col)
+{
+	for (int row = 0; row < 9; row++)
+	{	
+		if (row == cell_row)
+			continue;
+
+		if (field[row][cell_col]->get_number() == number)
+			return false;
+	}
+
+	for (int col = 0; col < 9; col++)
+	{	
+		if (col == cell_col)
+			continue;
+
+		if (field[cell_row][col]->get_number() == number)
+			return false;
+	}
+
+	int box_row = cell_row / 3;
+	int box_col = cell_col / 3;
+
+	for (int row_in_box = 0; row_in_box < 3; row_in_box++)
+	{
+		for (int col_in_box = 0; col_in_box < 3; col_in_box++)
+		{
+			int row = box_row * 3 + row_in_box;
+			int col = box_col * 3 + col_in_box;
+
+			if (row == cell_row && col == cell_col)
+				continue;
+
+			if (field[row][col]->get_number() == number)
+				return false;
+		}
+	}
+
+	return true;
+}
 
 void Field::keyPressEvent(QKeyEvent* event)
 {
@@ -194,6 +243,16 @@ void Field::keyPressEvent(QKeyEvent* event)
 		return;
 
 	
+	// Обробка видалення не правильного рішення
+	if (event->key() == Qt::Key::Key_Backspace || event->key() == Qt::Key::Key_Delete)
+	{
+		if (active_cell->is_wrong())
+		{
+			active_cell->toggle_wrong_state();
+		}
+		return;
+	}
+
 	// Обробка натискання чисел
 	if (event->key() >= Qt::Key::Key_1 && event->key() <= Qt::Key::Key_9)
 	{
@@ -235,7 +294,13 @@ void Field::keyPressEvent(QKeyEvent* event)
 
 			uncompleted_field[row][col] = number;
 
+			clear_invalid_candidates();
+
 			set_cells_highlighting_style();
+
+			placed_count[number - 1]++;
+			if (placed_count[number - 1] == 9)
+				emit number_finished(number);
 
 			finished_cells++;
 			if (finished_cells == 81)
@@ -243,19 +308,15 @@ void Field::keyPressEvent(QKeyEvent* event)
 		}
 		else
 		{
-			active_cell->toggle_wrong_state(number);
-			emit wrong_number();
-		}
-		
-	}
+			int x = active_cell->get_coords().x();
+			int y = active_cell->get_coords().y();
 
-	// Обробка видалення не правильного рішення
-	if (event->key() == Qt::Key::Key_Backspace || event->key() == Qt::Key::Key_Delete)
-	{
-		if (active_cell->is_wrong())
-		{
-			active_cell->toggle_wrong_state();
-		}
+			active_cell->toggle_wrong_state(number);
+
+			// Якщо гравець поставив число, яке вже є на рядку\стовпці\квадраті, а тобто не підходяще число, то помилка за неуважність не зараховується
+			if (is_valid_candidate(number, x, y))
+				emit wrong_number();
+		}	
 	}
 }
 
@@ -287,10 +348,16 @@ bool Field::show_hint()
 
 	uncompleted_field[row][col] = number;
 
+	clear_invalid_candidates();
+
 	set_cells_highlighting_style();
 
-	finished_cells++;
 
+	placed_count[number - 1]++;
+	if (placed_count[number - 1] == 9)
+		emit number_finished(number);
+
+	finished_cells++;
 	if (finished_cells == 81)
 		emit finished_field();
 
@@ -305,6 +372,9 @@ void Field::clear()
 
 	cells_by_number.clear();
 	cells_by_candidate.clear();
+
+	for (int number = 0; number < 9; number++)
+		placed_count[number] = 0;
 }
 void Field::set_numbers(QList<QList<int>> finished_field, QList<QList<int>> unfinished_field)
 {
@@ -327,8 +397,72 @@ void Field::set_numbers(QList<QList<int>> finished_field, QList<QList<int>> unfi
 
 				finished_cells++;
 
+				placed_count[number - 1]++;
+				if (placed_count[number - 1] == 9)
+					emit number_finished(number);
+
 				cells_by_number[number].push_back(field[row][col]);
 			}
+		}
+	}
+
+	if (auto_fill_candidates_at_start)
+		fill_candidates();
+}
+
+void Field::unhighlight_number(int number)
+{
+	for (auto& cell : cells_by_number[number])
+		cell->set_default_state();
+
+	for (auto& cell : cells_by_candidate[number])
+		cell->highlight_number(-1);
+}
+
+void Field::clear_invalid_candidates()
+{
+	int active_cell_row = active_cell->get_coords().x();
+	int active_cell_col = active_cell->get_coords().y();
+
+	int number = active_cell->get_number();
+
+	for (int row = 0; row < 9; row++)
+	{
+		if (row == active_cell_row)
+			continue;
+
+		field[row][active_cell_col]->remove_candidate(number);
+
+		cells_by_candidate[number].removeOne(field[row][active_cell_col]);
+	}
+
+	for (int col = 0; col < 9; col++)
+	{
+		if (col == active_cell_col)
+			continue;
+
+		field[active_cell_row][col]->remove_candidate(number);
+
+		cells_by_candidate[number].removeOne(field[active_cell_row][col]);
+	}
+
+	int active_cell_box_row = active_cell_row / 3;
+	int active_cell_box_col = active_cell_col / 3;
+
+	for (int row_in_box = 0; row_in_box < 3; row_in_box++)
+	{
+		int row = active_cell_box_row * 3 + row_in_box;
+
+		for (int col_in_box = 0; col_in_box < 3; col_in_box++)
+		{
+			int col = active_cell_box_col * 3 + col_in_box;
+
+			if (row == active_cell_row && col == active_cell_col)
+				continue;
+
+			field[row][col]->remove_candidate(number);
+
+			cells_by_candidate[number].removeOne(field[row][col]);
 		}
 	}
 }
@@ -345,6 +479,30 @@ void Field::change_field_theme(QColor field, QColor field_border)
 	setStyleSheet("QWigdet { background-color: " + field.name() + ";"
 						    "border: 2px solid " + field_border.name() + ";}");
 }
+
+void Field::highlight_number(int number)
+{
+	unhighlight_number(highlighted_number);
+
+	highlighted_number = number;
+
+	for (auto& cell : cells_by_number[number])
+			cell->highlight_cell();
+
+	for (auto& cell : cells_by_candidate[number])
+		cell->highlight_number(number);
+}
+
+void Field::fill_candidates_at_start(bool fill)
+{
+	auto_fill_candidates_at_start = fill;
+}
+
+void Field::remove_invalid_candidates(bool remove)
+{
+	auto_remove_invalid_candidates = remove;
+}
+
 
 QList<QList<Cell *>> Field::get_cells()
 {
@@ -370,6 +528,10 @@ void Field::load_field(QList<QList<int>> numbers, QList<QList<QList<int>>> notes
 				field[row][col]->set_number(number);
 
 				finished_cells++;
+
+				placed_count[number - 1]++;
+				if (placed_count[number - 1] == 9)
+					emit number_finished(number);
 
 				cells_by_number[number].push_back(field[row][col]);
 			}

@@ -193,6 +193,7 @@ void Cell::clear()
 		candidate = false;
 
 	finished = false;
+	finished_number = -1;
 	update();
 }
 

@@ -55,6 +55,9 @@ private:
 
 	void load_game();
 
+	void set_inactive_number_button(int number);
+	void set_default_number_button();
+
 	Field * field;
 
 	Result * result_window;
@@ -74,7 +77,7 @@ private:
 	QLabel * time_label;
 	QLabel * errors_label;
 	QLabel * hints_label;
-	QList<QLabel *> numbers_labels;
+	QList<QPushButton *> numbers_button;
 };
 
 // При натискані на "нова гра" має показуватись вибір складності (легка, нормальна, складна, надскладна) 

@@ -69,21 +69,31 @@ Play_menu::Play_menu(QWidget *parent)
 
 
 	// Можливо в майбутньому все-таки додати це?
-	/*auto * numbers_widget = new QWidget;
+	auto * numbers_widget = new QWidget;
+	numbers_widget->setFixedSize(650,70);
 
 	auto * numbers_layout = new QHBoxLayout(numbers_widget);
 
 	for (int number = 1; number <= 9; number++)
 	{
-		auto * number_label = new QLabel(QString::number(number));
+		auto * number_button = new QPushButton(QString::number(number));
 
-		numbers_layout->addWidget(number_label, 0);
+		number_button->setStyleSheet("font-size: 36px");
 
-		numbers_labels.push_back(number_label);
+		connect(number_button, &QPushButton::pressed, [=]()
+			{
+				field->set_cells_default_style();
+				field->highlight_number(number);
+			});
+
+		numbers_layout->addWidget(number_button, 0, Qt::AlignCenter);
+
+		numbers_button.push_back(number_button);
 	}
 
-	center_menu_part_layout->addWidget(numbers_widget, 0, Qt::AlignCenter);*/
+
 	center_menu_part_layout->addWidget(field, 0, Qt::AlignCenter);
+	center_menu_part_layout->addWidget(numbers_widget, 0, Qt::AlignCenter);
 	
 
 	// нижня частина
@@ -174,6 +184,8 @@ Play_menu::Play_menu(QWidget *parent)
 
 	connect(result_window, &Result::play_again, [=]() { start_game(); });
 
+	connect(field, &Field::number_finished, this, &Play_menu::set_inactive_number_button);
+
 }
 
 Play_menu::~Play_menu()
@@ -202,6 +214,8 @@ void Play_menu::start_game(Difficulties game_difficulty)
 
 	notepad_mode = false;
 	need_to_save_game = true;
+
+	set_default_number_button();
 
 	emit field_ready();
 }
@@ -372,7 +386,7 @@ void Play_menu::change_field_colors(QColor field_color, QColor field_border)
 
 void Play_menu::save_game()
 {
-	// need_to_save_game залежить від того, чи гравець вже пройшов судоку, а тому його не треба зберігати, чи ні
+	// need_to_save_game залежить від того, чи гравець вже пройшов судоку
 	if (!need_to_save_game)
 	{
 		game_info.clear_saved_game_file();
@@ -387,6 +401,8 @@ void Play_menu::save_game()
 
 void Play_menu::load_game()
 {
+	set_default_number_button();
+
 	QList<QList<int>> numbers { 9, QList<int>(9,0)};
 	QList<QList<int>> completed_field { 9, QList<int>(9,0)};
 	QList<QList<QList<int>>> notes { 9, QList<QList<int>>(9, QList<int>(9,0)) };
@@ -401,4 +417,21 @@ void Play_menu::load_game()
 	errors = record.errors;
 	hints = record.hints;
 	difficulty = record.difficulty;
+}
+
+void Play_menu::set_inactive_number_button(int number)
+{
+	numbers_button[number - 1]->setEnabled(false);	
+	numbers_button[number - 1]->setStyleSheet("QPushButton { color: gray; font-size: 36px }");	
+	
+}
+
+void Play_menu::set_default_number_button()
+{
+	for (int number = 0; number < 9; number++)
+	{
+		numbers_button[number]->setStyleSheet("QPushButton { color: black; font-size: 36px }"
+											  "QPushButton:hover { color: #555555; }");
+		numbers_button[number]->setEnabled(true);
+	}
 }

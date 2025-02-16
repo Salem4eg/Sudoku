@@ -187,7 +187,6 @@ void Records::change_current_records()
 		return;
 	}
 
-	// То є криндж
 	QList<Record> all_records;
 
 	for (auto& category : records[current_difficulty])
