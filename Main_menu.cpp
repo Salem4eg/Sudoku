@@ -21,8 +21,6 @@ Main_menu::Main_menu(QWidget* parent)
 	connect(appearance_button, &QPushButton::pressed, [=]() { emit show_appearance_menu(); });
 	connect(exit_button, &QPushButton::pressed, [=]() { emit close_program(); });
 
-	// Це ні про що 
-	change_buttons_style();
 
 	game_name->setStyleSheet("QLabel { color: " + text_color.name() + ";  font-size: 96pt; }");
 
@@ -53,8 +51,6 @@ Main_menu::Main_menu(QWidget* parent)
 	main_menu_layout->addLayout(game_name_layout);
 	main_menu_layout->addLayout(buttons_layout);
 	main_menu_layout->addLayout(space_layout);
-
-
 }
 
 Main_menu::~Main_menu()
@@ -69,17 +65,6 @@ void Main_menu::paintEvent(QPaintEvent*)
 	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-void Main_menu::set_button_style(QPushButton* button)
-{
-	/*button->setFlat(true);*/
-}
-
-void Main_menu::change_appearance()
-{
-	// Додати зміну стилю назви гри
-	// Додати зміну заднього фону
-	change_buttons_style();
-}
 
 void Main_menu::show_continue_option(bool show)
 {
@@ -87,15 +72,6 @@ void Main_menu::show_continue_option(bool show)
 		continue_game_button->show();
 	else
 		continue_game_button->hide();
-}
-
-void Main_menu::change_buttons_style()
-{
-	set_button_style(play_button);
-	set_button_style(continue_game_button);
-	set_button_style(personal_best_button);
-	set_button_style(appearance_button);
-	set_button_style(exit_button);
 }
 
 void Main_menu::change_background(QString& filename)
