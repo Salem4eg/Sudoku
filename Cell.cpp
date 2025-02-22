@@ -36,20 +36,20 @@ void Cell::paintEvent(QPaintEvent * event)
 	switch (cell_state)
 	{
 	case Cell::Wrong:
-		painter.setBrush(QBrush(QColor("crimson")));
+		painter.setBrush(QBrush(current_theme.wrong_cell));
 		break;
 	case Cell::Highlighted:
-		painter.setBrush(QBrush(QColor("darkgray")));
+		painter.setBrush(QBrush(current_theme.highlighted_cell));
 		break;
 	case Cell::Highlighted_active:
-		painter.setBrush(QBrush(QColor("yellow")));
+		painter.setBrush(QBrush(current_theme.highlighted_active_cell));
 		break;
 	default:
-		painter.setBrush(QBrush(QColor("white")));
+		painter.setBrush(QBrush(current_theme.regular_cell));
 		break;
 	}
 
-	painter.setPen({Qt::black, 1});
+	painter.setPen({current_theme.field_border, 1});
 
 	painter.drawRect(0,0,70,70);
 
@@ -59,14 +59,14 @@ void Cell::paintEvent(QPaintEvent * event)
 	// Підсвічення кандидата
 	if (highlighted_number != -1)
 	{
-		painter.setBrush(QBrush(QColor("cyan")));
+		painter.setBrush(QBrush(current_theme.highlighted_candidate));
 
 		auto& coords = number_rectangles[highlighted_number];
 
 		painter.drawRect(coords.x(), coords.y(), 20, 20);
 	}
 
-	painter.setPen(Qt::black);
+	painter.setPen(current_theme.regular_text);
 	painter.setBrush(Qt::NoBrush);
 
 	// Відмалювання не правильного числа
@@ -98,6 +98,12 @@ void Cell::paintEvent(QPaintEvent * event)
 
 		painter.drawText(coords.x(), coords.y(), 20, 20, Qt::AlignCenter, QString::number(number + 1));
 	}
+}
+
+void Cell::change_theme(Theme theme)
+{
+	current_theme = theme;
+	update();
 }
 
 

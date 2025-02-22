@@ -18,13 +18,12 @@ public:
 public slots:
 	void change_appearance();
 	void show_continue_option(bool show);
-	void change_main_menu_background(QString filename);
+	void change_background(QString& filename);
 signals:
 	void play_new_game();
 	void continue_game();
 	void show_personal_recods();
 	void show_appearance_menu();
-	void show_guide();
 	void close_program();
 
 protected:
@@ -42,6 +41,5 @@ private:
 	QPushButton * continue_game_button;
 	QPushButton * personal_best_button;
 	QPushButton * appearance_button;
-	QPushButton * guide_button;
 	QPushButton * exit_button;
 };

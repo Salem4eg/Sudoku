@@ -24,15 +24,18 @@ public:
 public slots:
 	void start_game(Difficulties game_difficulty = Difficulties::hard);
 	void continue_game();
-	void change_field_colors(QColor field_color, QColor field_border);
+	void change_theme(Theme theme);
 	bool has_saved_game();
 	void save_game();
+	void fill_candidates_at_start(bool fill);
+	void remove_invalid_candidates(bool remove);
 signals:
 	void leave();
 	void field_ready();
 	void game_saved(bool saved);
 	void test();
 	void new_record(Record record);
+	void game_finished(bool finished);
 
 
 private:

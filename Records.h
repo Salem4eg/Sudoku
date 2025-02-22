@@ -5,6 +5,8 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QStyleOption>
+#include <QPainter>
 #include "Structures.h"
 #include "GameInfo.h"
 
@@ -16,6 +18,7 @@ public slots:
 	// отримувати рекорд під час гри
 	void get_new_record(Record record);
 	void save_records();
+	void change_background(QString& background);
 
 signals:
 	void leave();
@@ -24,6 +27,8 @@ public:
 	Records(QWidget *parent = nullptr);
 	~Records();
 
+protected:
+	void paintEvent(QPaintEvent * event);
 
 private:
 

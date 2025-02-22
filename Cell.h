@@ -3,6 +3,8 @@
 #include <QPushButton>
 #include <QPainter>
 
+#include "Structures.h"
+
 class Cell : public QPushButton
 {
 	Q_OBJECT
@@ -12,6 +14,9 @@ class Cell : public QPushButton
 		Default, Wrong, Highlighted, Highlighted_active
 	};
 
+
+public slots:
+	void change_theme(Theme theme);
 
 signals:
 	void set_active(Cell * cell);
@@ -58,4 +63,5 @@ private:
 	QPoint coords;
 	// Зберігає координати прямокутників, що присвоєні до свого числа. Використовується, щоб одразу знати де малювати підсвічений прямокутник для числа, а також для намалювання кандидата
 	QList<QPoint> number_rectangles;
+	Theme current_theme;
 };

@@ -16,6 +16,7 @@ class Result  : public QDialog
 public slots:
 	void show_won(Record& result);
 	void show_lost();
+	void change_theme(Theme theme);
 
 signals:
 	void back_to_menu();

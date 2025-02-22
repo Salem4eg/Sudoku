@@ -92,12 +92,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Appearance_menu.cpp" />
     <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="Main_menu.cpp" />
     <ClCompile Include="Play_menu.cpp" />
     <ClCompile Include="Records.cpp" />
     <ClCompile Include="Result.cpp" />
+    <ClCompile Include="Settings_menu.cpp" />
     <ClCompile Include="Sudoku_generator.cpp" />
     <ClCompile Include="Solver.cpp" />
     <ClCompile Include="Tests.cpp" />
@@ -118,6 +118,7 @@
   <ItemGroup>
     <QtMoc Include="Result.h" />
     <ClInclude Include="GameInfo.h" />
+    <QtMoc Include="Settings_menu.h" />
     <ClInclude Include="Sudoku_generator.h" />
     <ClInclude Include="Solver.h" />
     <ClInclude Include="Test_utilities.h" />
@@ -126,7 +127,6 @@
     <QtMoc Include="Records.h" />
     <QtMoc Include="Main_menu.h" />
     <QtMoc Include="Play_menu.h" />
-    <QtMoc Include="Appearance_menu.h" />
     <ClInclude Include="Structures.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -13,42 +13,46 @@ Play_menu::Play_menu(QWidget *parent)
 
 	// Тут кнопка переходу до головного меню
 	auto * upper_menu_left_part_widget = new QWidget(upper_menu_part);
-	upper_menu_left_part_widget->setStyleSheet("background-color: yellow");
+	//upper_menu_left_part_widget->setStyleSheet("background-color: yellow");
 
 	auto * upper_menu_left_part_layout = new QHBoxLayout(upper_menu_left_part_widget);
 
-	auto * back_button = new QPushButton("Вийти", upper_menu_left_part_widget);
-	upper_menu_left_part_layout->addWidget(back_button, 0, Qt::AlignLeft);
+	auto * back_button = new QPushButton("Вийти");
+	back_button->setStyleSheet("font-size: 24px");
+	upper_menu_left_part_layout->addWidget(back_button, 0, Qt::AlignHCenter);
 
 
 
 	// Тут час, складність, помилки
 	auto * upper_menu_center_part_widget = new QWidget(upper_menu_part);
-	upper_menu_center_part_widget->setStyleSheet("background-color: yellow");
+	//upper_menu_center_part_widget->setStyleSheet("background-color: yellow");
 
 	auto * upper_menu_center_part_layout = new QHBoxLayout(upper_menu_center_part_widget);
 
-	difficulty_label = new QLabel("Складність: складна", upper_menu_center_part_widget);
-	difficulty_label->setStyleSheet("background-color: white");
 
 
-	time_label = new QLabel("Час: 0:00", upper_menu_center_part_widget);
-	errors_label = new QLabel("Помилок: 0 / 3", upper_menu_center_part_widget);
-	hints_label = new QLabel("Підказок: 0 / 3", upper_menu_center_part_widget);
+	difficulty_label = new QLabel("Складність: складна");
+	time_label = new QLabel("Час: 0:00");
+	errors_label = new QLabel("Помилок: 0 / 3");
+	hints_label = new QLabel("Підказок: 0 / 3");
 
-	time_label->setStyleSheet("background-color: white");
-	errors_label->setStyleSheet("background-color: white");
-	hints_label->setStyleSheet("background-color: white");
+	//difficulty_label->setStyleSheet("background-color: white");
+	//time_label->setStyleSheet("background-color: red");
+	//errors_label->setStyleSheet("background-color: white");
+	//hints_label->setStyleSheet("background-color: red");
 
-	upper_menu_center_part_layout->addWidget(difficulty_label, 5, Qt::AlignRight);
-	upper_menu_center_part_layout->addWidget(time_label, 1, Qt::AlignCenter);
-	upper_menu_center_part_layout->addWidget(errors_label, 1, Qt::AlignLeft);
-	upper_menu_center_part_layout->addWidget(hints_label, 4, Qt::AlignLeft);
+
+	upper_menu_center_part_layout->addStretch(3);
+	upper_menu_center_part_layout->addWidget(difficulty_label, 1, Qt::AlignHCenter);
+	upper_menu_center_part_layout->addWidget(time_label, 1, Qt::AlignHCenter);
+	upper_menu_center_part_layout->addWidget(errors_label, 1, Qt::AlignHCenter);
+	upper_menu_center_part_layout->addWidget(hints_label, 1, Qt::AlignHCenter);
+	upper_menu_center_part_layout->addStretch(3);
 
 
 	// Це пустота
 	auto * upper_menu_right_part_widget = new QWidget(upper_menu_part);
-	upper_menu_right_part_widget->setStyleSheet("background-color: yellow");
+	//upper_menu_right_part_widget->setStyleSheet("background-color: yellow");
 
 
 	upper_menu_part_layout->addWidget(upper_menu_left_part_widget, 1);
@@ -61,14 +65,13 @@ Play_menu::Play_menu(QWidget *parent)
 
 	// центральна частина
 	auto * center_menu_part = new QWidget;
-	center_menu_part->setStyleSheet("background-color: gray");
+	//center_menu_part->setStyleSheet("background-color: gray");
 
 	auto * center_menu_part_layout = new QVBoxLayout(center_menu_part);
 
 	field = new Field(center_menu_part);
 
 
-	// Можливо в майбутньому все-таки додати це?
 	auto * numbers_widget = new QWidget;
 	numbers_widget->setFixedSize(650,70);
 
@@ -98,7 +101,7 @@ Play_menu::Play_menu(QWidget *parent)
 
 	// нижня частина
 	auto * lower_menu_part = new QWidget;
-	lower_menu_part->setStyleSheet("background-color: gray");
+	//lower_menu_part->setStyleSheet("background-color: gray");
 
 	auto * lower_menu_part_layout = new QHBoxLayout(lower_menu_part);
 
@@ -141,10 +144,15 @@ Play_menu::Play_menu(QWidget *parent)
 
 	connect(back_button, &QPushButton::pressed, [=]() 
 		{ 
-			emit leave();
-			emit game_saved(true);
+			if (need_to_save_game)
+			{
+				emit game_saved(true);
+				save_game();
+			}
+			else
+				emit game_saved(false);
 
-			save_game();
+			emit leave();
 		});
 
 	connect(hint_button, &QPushButton::pressed, [=]()
@@ -185,6 +193,7 @@ Play_menu::Play_menu(QWidget *parent)
 	connect(result_window, &Result::play_again, [=]() { start_game(); });
 
 	connect(field, &Field::number_finished, this, &Play_menu::set_inactive_number_button);
+	connect(this, &Play_menu::game_finished, field, &Field::lock_field);
 
 }
 
@@ -217,13 +226,12 @@ void Play_menu::start_game(Difficulties game_difficulty)
 
 	set_default_number_button();
 
+	emit game_finished(false);
 	emit field_ready();
 }
 
 void Play_menu::continue_game()
 {
-	load_game();
-
 	update_time_label();
 	update_errors_label();
 	update_hints_label();
@@ -234,6 +242,7 @@ void Play_menu::continue_game()
 	notepad_mode = false;
 	need_to_save_game = true;
 
+	emit game_finished(false);
 	emit field_ready();
 }
 
@@ -331,6 +340,7 @@ void Play_menu::game_lost()
 	Record result(time_elapsed, errors, hints, difficulty);
 
 	emit game_saved(false);
+	emit game_finished(true);
 	
 	need_to_save_game = false;
 
@@ -345,6 +355,7 @@ void Play_menu::game_won()
 
 	emit new_record(result);
 	emit game_saved(false);
+	emit game_finished(true);
 
 	need_to_save_game = false;
 
@@ -355,6 +366,11 @@ bool Play_menu::has_saved_game()
 {
 	if (game_info.is_saved_game_file_empty())
 		return false;
+
+	need_to_save_game = true;
+
+	load_game();
+
 	return true;
 }
 
@@ -379,9 +395,11 @@ void Play_menu::fill_field()
 	field->set_numbers(generator.get_completed_sudoku(), generator.get_uncompleted_sudoku());
 }
 
-void Play_menu::change_field_colors(QColor field_color, QColor field_border)
+
+void Play_menu::change_theme(Theme theme)
 {
-	field->change_field_theme(field_color, field_border);
+	field->change_theme(theme);
+	result_window->change_theme(theme);
 }
 
 void Play_menu::save_game()
@@ -398,6 +416,17 @@ void Play_menu::save_game()
 
 	game_info.save_game(numbers_and_notes.first, numbers_and_notes.second, { time_elapsed, errors, hints, difficulty }, completed_field);
 }
+
+void Play_menu::fill_candidates_at_start(bool fill)
+{
+	field->fill_candidates_at_start(fill);
+}
+
+void Play_menu::remove_invalid_candidates(bool remove)
+{
+	field->remove_invalid_candidates(remove);
+}
+
 
 void Play_menu::load_game()
 {
@@ -422,7 +451,7 @@ void Play_menu::load_game()
 void Play_menu::set_inactive_number_button(int number)
 {
 	numbers_button[number - 1]->setEnabled(false);	
-	numbers_button[number - 1]->setStyleSheet("QPushButton { color: gray; font-size: 36px }");	
+	//numbers_button[number - 1]->setStyleSheet("QPushButton { color: gray; font-size: 36px }");	
 	
 }
 
@@ -430,8 +459,8 @@ void Play_menu::set_default_number_button()
 {
 	for (int number = 0; number < 9; number++)
 	{
-		numbers_button[number]->setStyleSheet("QPushButton { color: black; font-size: 36px }"
-											  "QPushButton:hover { color: #555555; }");
+		//numbers_button[number]->setStyleSheet("QPushButton { color: black; font-size: 36px }"
+											  //"QPushButton:hover { color: #555555; }");
 		numbers_button[number]->setEnabled(true);
 	}
 }

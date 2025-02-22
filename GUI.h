@@ -4,14 +4,13 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QLabel>
-#include <QPushButton>
 #include <QVBoxLayout>
 #include <QApplication>
 
 #include "Records.h"
 #include "Main_menu.h"
 #include "Play_menu.h"
-#include "Appearance_menu.h"
+#include "Settings_menu.h"
 #include "Tests.h"
 
 class GUI : public QMainWindow
@@ -40,7 +39,7 @@ private:
 	Records * personal_records;
 	Main_menu * main_menu;
 	Play_menu * play_menu;
-	Appearance_menu * appearance_menu;
+	Settings_menu * settings_menu;
 
 	QGridLayout * layout;
 

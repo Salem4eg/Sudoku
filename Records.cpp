@@ -3,52 +3,54 @@
 #include <algorithm>
 
 Records::Records(QWidget* parent)
-	: QWidget(parent), current_difficulty(hard), current_category(everything_included), hints_allowed(true), errors_allowed(true)
+	: QWidget(parent), current_difficulty(hard), current_category(everything_included), hints_allowed(false), errors_allowed(false)
 {
-
+	setStyleSheet("Records { background-image: url(Зображення/Шпалери головного меню.png); }");
 	records = QList<QList<QList<Record>>>(4, QList<QList<Record>>(4));
 
 	auto* main_layout = new QVBoxLayout(this);
 
 	auto* upper_part = new QWidget;
-	upper_part->setStyleSheet("background-color: gray");
+	//upper_part->setStyleSheet("background-color: gray");
 	auto* upper_part_layout = new QHBoxLayout(upper_part);
 
 	auto* quit_button = new QPushButton("Вийти");
+	quit_button->setStyleSheet("font-size: 24px");
 	auto* records_label = new QLabel("Особисті рекорди");
+	records_label->setStyleSheet("font-size: 30px");
 	auto* free_space = new QWidget;
 
-	upper_part_layout->addWidget(quit_button, 1, Qt::AlignLeft);
-	upper_part_layout->addWidget(records_label, 1, Qt::AlignCenter);
+	upper_part_layout->addWidget(quit_button, 1, Qt::AlignHCenter);
+	upper_part_layout->addWidget(records_label, 7, Qt::AlignHCenter);
 	upper_part_layout->addWidget(free_space, 1);
 
 	auto* central_part = new QWidget;
-	central_part->setStyleSheet("background-color: gray");
+	//central_part->setStyleSheet("background-color: gray");
 	auto* central_part_layout = new QHBoxLayout(central_part);
 
 	auto* show_options = new QWidget;
+	//show_options->setStyleSheet("background-color: gray");
 	auto* show_options_layout = new QVBoxLayout(show_options);
 
 	auto* change_difficulty = new QPushButton("Складність: складна");
-	change_difficulty->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	//change_difficulty->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	auto* toggle_errors = new QPushButton("Без помилок");
-	toggle_errors->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	//toggle_errors->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	auto* toggle_hints = new QPushButton("Без підказок");
-	toggle_hints->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	//toggle_hints->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	auto* options_free_space = new QWidget;
 
 
-
-	show_options_layout->addWidget(change_difficulty);
-	show_options_layout->addWidget(toggle_errors);
-	show_options_layout->addWidget(toggle_hints);
+	show_options_layout->addWidget(change_difficulty, 1, Qt::AlignLeft);
+	show_options_layout->addWidget(toggle_errors, 1, Qt::AlignLeft);
+	show_options_layout->addWidget(toggle_hints, 1, Qt::AlignLeft);
 	show_options_layout->addWidget(options_free_space);
 
 	show_options_layout->setContentsMargins(50, 120, 0, 0);
 	show_options_layout->setSpacing(20);
 
 	auto* records = new QWidget;
-	records->setStyleSheet("background-color: white");
+	//records->setStyleSheet("background-color: white");
 	auto* records_layout = new QVBoxLayout(records);
 
 	auto* records_labels = new QWidget;
@@ -78,8 +80,9 @@ Records::Records(QWidget* parent)
 	auto* central_part_free_space = new QWidget;
 
 
+	central_part_layout->addSpacing(20);
 	central_part_layout->addWidget(show_options, 2);
-	central_part_layout->addWidget(records, 3);
+	central_part_layout->addWidget(records, 4);
 	central_part_layout->addWidget(central_part_free_space, 2);
 
 
@@ -92,6 +95,38 @@ Records::Records(QWidget* parent)
 	// Зробити зв'язок з кнопками, щоб без помилок, без підказок, складність були зв'язані з лямбда-функціями, які змінять складність/дозвіл, і використають change_current_records()
 	// для дозволів додатково використати change_category() перед change_current_records()
 	connect(quit_button, &QPushButton::pressed, this, &Records::leave);
+
+	connect(change_difficulty, &QPushButton::pressed, [=]()
+		{
+			int difficulty = current_difficulty;
+			difficulty++;
+
+			if (difficulty > 3)
+				difficulty = 0;
+
+			current_difficulty = static_cast<Difficulties>(difficulty);
+
+			switch (current_difficulty)
+			{
+			case easy:
+				change_difficulty->setText("Складність: легка");
+				break;
+			case normal:
+				change_difficulty->setText("Складність: звичайна");
+				break;
+			case hard:
+				change_difficulty->setText("Складність: складна");
+				break;
+			case ultra_hard:
+				change_difficulty->setText("Складність: надскладна");
+				break;
+			default:
+				break;
+			}
+
+			change_current_records();
+		});
+
 	connect(toggle_errors, &QPushButton::pressed, [=]() 
 		{ 
 			errors_allowed = !errors_allowed;
@@ -122,11 +157,20 @@ Records::Records(QWidget* parent)
 Records::~Records()
 {}
 
+void Records::paintEvent(QPaintEvent * event)
+{
+	QStyleOption opt;
+
+	opt.initFrom(this);
+	QPainter p(this);
+	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
+
 // Відповідає за додавання рекорду до віджета
 void Records::add_record(const Record& record)
 {
 	auto* record_widget = new QWidget;
-	record_widget->setStyleSheet("background-color: red");
+	//record_widget->setStyleSheet("background-color: red");
 	record_widget->setFixedHeight(50);
 
 	auto* record_layout = new QHBoxLayout(record_widget);
@@ -274,3 +318,7 @@ void Records::save_records()
 	game_info.save_records(records);
 }
 
+void Records::change_background(QString& background)
+{
+	setStyleSheet("Records { background-image: url( " + background + "); }");
+}

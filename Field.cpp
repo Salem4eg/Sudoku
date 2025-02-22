@@ -2,10 +2,9 @@
 #include <QShortcut>
 
 Field::Field(QWidget* parent)
-	: QWidget(parent), notepad_mode(false), active_cell(nullptr), finished_cells(0), placed_count(9,0), auto_fill_candidates_at_start(true), auto_remove_invalid_candidates(true)
+	: QWidget(parent), notepad_mode(false), active_cell(nullptr), finished_cells(0), 
+	placed_count(9,0), auto_fill_candidates_at_start(false), auto_remove_invalid_candidates(true), game_finished(false)
 {
-	setStyleSheet("background-color: gray");
-
 	auto* layout = new QVBoxLayout(this);
 
 	auto * outline = new QWidget;
@@ -36,6 +35,11 @@ Field::Field(QWidget* parent)
 
 			box_widget->setStyleSheet("border: 2px solid black;");
 
+			connect(this, &Field::theme_changed, [=](Theme theme)
+				{
+					box_widget->setStyleSheet("border: 2px solid " + theme.field_border.name() + ";");
+				});
+
 			auto * box_layout = new QGridLayout(box_widget);
 			
 			box_layout->setSpacing(0);
@@ -55,7 +59,10 @@ Field::Field(QWidget* parent)
 		for (int col = 0; col < 9; col++)
 		{
 			auto* cell = new Cell(this, row, col);
+
 			connect(cell, &Cell::set_active, this, &Field::set_active_cell);
+			connect(this, &Field::theme_changed, cell, &Cell::change_theme);
+
 			field_row.push_back(cell);
 			box_layouts[(row / 3 * 3) + (col / 3)]->addWidget(cell, row % 3, col % 3);
 		}
@@ -239,7 +246,7 @@ bool Field::is_valid_candidate(int number, int cell_row, int cell_col)
 
 void Field::keyPressEvent(QKeyEvent* event)
 {
-	if (active_cell->is_finished())
+	if (active_cell->is_finished() || game_finished)
 		return;
 
 	
@@ -301,7 +308,8 @@ void Field::keyPressEvent(QKeyEvent* event)
 
 		uncompleted_field[row][col] = number;
 
-		clear_invalid_candidates();
+		if (auto_remove_invalid_candidates)
+			clear_invalid_candidates();
 
 		set_cells_highlighting_style();
 
@@ -334,7 +342,7 @@ void Field::toggle_notepad_mode()
 
 bool Field::show_hint()
 {
-	if (active_cell->is_finished())
+	if (active_cell->is_finished() || game_finished)
 		return false;
 
 
@@ -355,7 +363,8 @@ bool Field::show_hint()
 
 	uncompleted_field[row][col] = number;
 
-	clear_invalid_candidates();
+	if (auto_remove_invalid_candidates)
+		clear_invalid_candidates();
 
 	set_cells_highlighting_style();
 
@@ -481,10 +490,12 @@ bool Field::is_correct_number(int number, QPoint coords)
 	return completed_field[row][col] == number;
 }
 
-void Field::change_field_theme(QColor field, QColor field_border)
+void Field::change_theme(Theme theme)
 {
-	setStyleSheet("QWigdet { background-color: " + field.name() + ";"
-						    "border: 2px solid " + field_border.name() + ";}");
+	setStyleSheet("Field { background-color: " + theme.field.name() + ";"
+						    "border: 2px solid " + theme.field_border.name() + ";}");
+
+	emit theme_changed(theme);
 }
 
 void Field::highlight_number(int number)
@@ -510,6 +521,10 @@ void Field::remove_invalid_candidates(bool remove)
 	auto_remove_invalid_candidates = remove;
 }
 
+void Field::lock_field(bool lock)
+{
+	game_finished = lock;
+}
 
 QList<QList<Cell *>> Field::get_cells()
 {

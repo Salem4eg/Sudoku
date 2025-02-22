@@ -33,13 +33,21 @@ struct Record
 
 struct Theme
 {
-	QString name;
 	QColor regular_text;
 	QColor hovered_text;
+	QColor inactive_text;
+
 	QColor field_border;
 	QColor field;
-	QColor background;
-	QString main_menu_background;
+
+	QColor regular_cell;
+	QColor highlighted_cell;
+	QColor highlighted_active_cell;
+	QColor highlighted_candidate;
+	QColor wrong_cell;
+
+	QColor background_color;
+	QString background;
 };
 
 enum Text_size

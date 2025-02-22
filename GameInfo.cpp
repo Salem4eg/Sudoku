@@ -77,7 +77,7 @@ bool GameInfo::is_saved_game_file_empty()
 {
 	data.setFileName(saved_game_filename);
 
-	data.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+	data.open(QIODevice::ReadOnly | QIODevice::Text);
 
 	bool is_empty = false;
 

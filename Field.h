@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QList>
 #include <QKeyEvent>
+#include "Structures.h"
 #include "Cell.h"
 #include <QGridLayout>
 
@@ -15,15 +16,17 @@ class Field  : public QWidget
 public slots:
 	void set_active_cell(Cell * cell);
 	void toggle_notepad_mode();
-	void change_field_theme(QColor field, QColor field_border);
+	void change_theme(Theme theme);
 	void highlight_number(int number);
 	void fill_candidates_at_start(bool fill);
 	void remove_invalid_candidates(bool remove);
+	void lock_field(bool lock);
 signals:
 	void wrong_number();
 	void finished_field();
 	void toggle_notepad();
 	void number_finished(int number);
+	void theme_changed(Theme theme);
 
 public:
 	Field(QWidget *parent);
@@ -69,4 +72,6 @@ private:
 
 	bool auto_fill_candidates_at_start;
 	bool auto_remove_invalid_candidates;
+
+	bool game_finished;
 };

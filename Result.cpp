@@ -154,5 +154,11 @@ void Result::show_lost()
 	show();
 }
 
+void Result::change_theme(Theme theme)
+{
+	setStyleSheet("background-color:" + theme.background_color.name() + ";");
+}
+
+
 Result::~Result()
 {}

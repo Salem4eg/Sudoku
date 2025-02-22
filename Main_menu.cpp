@@ -6,24 +6,22 @@ Main_menu::Main_menu(QWidget* parent)
 	: QWidget(parent), text_color("#f4a6e0"), background_color("#ffffff")
 {
 	setStyleSheet("Main_menu { background-image: url(Зображення/Шпалери головного меню.png); }");
-
 	auto* main_menu_layout = new QVBoxLayout(this);
 
 	game_name = new QLabel("Судоку");
 	play_button = new QPushButton("Грати");
 	continue_game_button = new QPushButton("Продовжити гру");
 	personal_best_button = new QPushButton("Особисті рекорди");
-	appearance_button = new QPushButton("Кольора палітра");
-	guide_button = new QPushButton("Посібник");
+	appearance_button = new QPushButton("Налаштування");
 	exit_button = new QPushButton("Вийти");
 
 	connect(play_button, &QPushButton::pressed, [=]() { emit play_new_game(); });
 	connect(continue_game_button, &QPushButton::pressed, [=]() { emit continue_game(); });
 	connect(personal_best_button, &QPushButton::pressed, [=]() { emit show_personal_recods(); });
 	connect(appearance_button, &QPushButton::pressed, [=]() { emit show_appearance_menu(); });
-	connect(guide_button, &QPushButton::pressed, [=]() { emit show_guide(); });
 	connect(exit_button, &QPushButton::pressed, [=]() { emit close_program(); });
 
+	// Це ні про що 
 	change_buttons_style();
 
 	game_name->setStyleSheet("QLabel { color: " + text_color.name() + ";  font-size: 96pt; }");
@@ -43,7 +41,6 @@ Main_menu::Main_menu(QWidget* parent)
 	buttons_layout->addWidget(continue_game_button, 0,Qt::AlignHCenter);
 	buttons_layout->addWidget(personal_best_button, 0,Qt::AlignHCenter);
 	buttons_layout->addWidget(appearance_button, 0,Qt::AlignHCenter);
-	buttons_layout->addWidget(guide_button, 0,Qt::AlignHCenter);
 	buttons_layout->addWidget(exit_button, 0,Qt::AlignHCenter);
 
 	auto* empty_widget = new QWidget;
@@ -98,11 +95,10 @@ void Main_menu::change_buttons_style()
 	set_button_style(continue_game_button);
 	set_button_style(personal_best_button);
 	set_button_style(appearance_button);
-	set_button_style(guide_button);
 	set_button_style(exit_button);
 }
 
-void Main_menu::change_main_menu_background(QString filename)
+void Main_menu::change_background(QString& filename)
 {
 	setStyleSheet("Main_menu { background-image: url( " + filename + "); }");
 }
