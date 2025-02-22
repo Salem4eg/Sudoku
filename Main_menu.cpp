@@ -3,9 +3,10 @@
 #include <QLabel>
 
 Main_menu::Main_menu(QWidget* parent)
-	: QWidget(parent), text_color("#f4a6e0"), background_color("#ffffff")
+	: QWidget(parent)
 {
 	setStyleSheet("Main_menu { background-image: url(Зображення/Шпалери головного меню.png); }");
+
 	auto* main_menu_layout = new QVBoxLayout(this);
 
 	game_name = new QLabel("Судоку");
@@ -22,35 +23,18 @@ Main_menu::Main_menu(QWidget* parent)
 	connect(exit_button, &QPushButton::pressed, [=]() { emit close_program(); });
 
 
-	game_name->setStyleSheet("QLabel { color: " + text_color.name() + ";  font-size: 96pt; }");
-
-	game_name->setAlignment(Qt::AlignCenter);
+	game_name->setStyleSheet("QLabel { font-size: 96pt; }");
 
 
-
-
-	auto* game_name_layout = new QVBoxLayout;
-	auto* buttons_layout = new QVBoxLayout;
-	auto* space_layout = new QVBoxLayout;
-
-	main_menu_layout->addWidget(game_name);
-
-	buttons_layout->addWidget(play_button, 0, Qt::AlignHCenter);
-	buttons_layout->addWidget(continue_game_button, 0,Qt::AlignHCenter);
-	buttons_layout->addWidget(personal_best_button, 0,Qt::AlignHCenter);
-	buttons_layout->addWidget(appearance_button, 0,Qt::AlignHCenter);
-	buttons_layout->addWidget(exit_button, 0,Qt::AlignHCenter);
-
-	auto* empty_widget = new QWidget;
-	space_layout->addWidget(empty_widget);
-
-	game_name_layout->setStretch(0, 1);
-	buttons_layout->setStretch(1, 1);
-	space_layout->setStretch(2, 1);
-
-	main_menu_layout->addLayout(game_name_layout);
-	main_menu_layout->addLayout(buttons_layout);
-	main_menu_layout->addLayout(space_layout);
+	main_menu_layout->addStretch(1);
+	main_menu_layout->addWidget(game_name, 0, Qt::AlignHCenter);
+	main_menu_layout->addStretch(1);
+	main_menu_layout->addWidget(play_button, 0, Qt::AlignHCenter);
+	main_menu_layout->addWidget(continue_game_button, 0,Qt::AlignHCenter);
+	main_menu_layout->addWidget(personal_best_button, 0,Qt::AlignHCenter);
+	main_menu_layout->addWidget(appearance_button, 0,Qt::AlignHCenter);
+	main_menu_layout->addWidget(exit_button, 0,Qt::AlignHCenter);
+	main_menu_layout->addStretch(4);
 }
 
 Main_menu::~Main_menu()

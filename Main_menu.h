@@ -29,9 +29,6 @@ protected:
 	void paintEvent(QPaintEvent*);
 
 private:
-	QColor text_color;
-	QColor background_color;
-
 	QLabel * game_name;
 	QPushButton * play_button;
 	QPushButton * continue_game_button;
