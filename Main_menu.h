@@ -16,7 +16,6 @@ public:
 	~Main_menu();
 
 public slots:
-	void change_appearance();
 	void show_continue_option(bool show);
 	void change_background(QString& filename);
 signals:
@@ -30,9 +29,6 @@ protected:
 	void paintEvent(QPaintEvent*);
 
 private:
-	void set_button_style(QPushButton* button);
-	void change_buttons_style();
-
 	QColor text_color;
 	QColor background_color;
 
