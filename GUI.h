@@ -32,8 +32,6 @@ public:
 protected:
 	void closeEvent(QCloseEvent * event) override;
 private:
-	void set_button_style(QPushButton* button);
-
 	QStackedWidget * menus;
 	
 	Records * personal_records;
