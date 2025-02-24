@@ -91,6 +91,7 @@ Records::Records(QWidget* parent)
 
 
 	load_records();
+	change_category();
 
 	// Зробити зв'язок з кнопками, щоб без помилок, без підказок, складність були зв'язані з лямбда-функціями, які змінять складність/дозвіл, і використають change_current_records()
 	// для дозволів додатково використати change_category() перед change_current_records()
@@ -223,10 +224,28 @@ void Records::change_current_records()
 {
 	clear_record_widgets();
 
-	if (current_category != everything_included)
+	if (current_category == nothing_included)
 	{
 		for (auto& record : records[current_difficulty][current_category])
 			add_record(record);
+
+		return;
+	}
+
+	if (current_category != everything_included)
+	{
+		QList<Record> all_records;
+
+		for (auto& record : records[current_difficulty][current_category])
+			all_records.push_back(record);
+
+		for (auto& record : records[current_difficulty][nothing_included])
+			all_records.push_back(record);
+
+		std::sort(all_records.begin(), all_records.end());
+
+		for (int i = 0; i <= 10; i++)
+			add_record(all_records[i]);	
 
 		return;
 	}
@@ -241,8 +260,8 @@ void Records::change_current_records()
 
 	std::sort(all_records.begin(), all_records.end());
 
-	for (auto& record : all_records)
-		add_record(record);
+	for (int i = 0; i <= 10; i++)
+		add_record(all_records[i]);	
 
 }
 
