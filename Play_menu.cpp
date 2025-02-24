@@ -3,16 +3,18 @@
 Play_menu::Play_menu(QWidget *parent)
 	: QWidget(parent)
 {
+	setFont(QFont("Comic Sans Ms"));
+
 	auto * play_menu_layout = new QVBoxLayout(this);
 
 	// верхня частина екрану
-	auto * upper_menu_part = new QWidget;
+	auto * upper_menu_part = new QWidget(this);
 
 	auto * upper_menu_part_layout = new QHBoxLayout(upper_menu_part);
 
 
 	// Тут кнопка переходу до головного меню
-	auto * upper_menu_left_part_widget = new QWidget(upper_menu_part);
+	auto * upper_menu_left_part_widget = new QWidget;
 	//upper_menu_left_part_widget->setStyleSheet("background-color: yellow");
 
 	auto * upper_menu_left_part_layout = new QHBoxLayout(upper_menu_left_part_widget);
@@ -24,7 +26,7 @@ Play_menu::Play_menu(QWidget *parent)
 
 
 	// Тут час, складність, помилки
-	auto * upper_menu_center_part_widget = new QWidget(upper_menu_part);
+	auto * upper_menu_center_part_widget = new QWidget;
 	//upper_menu_center_part_widget->setStyleSheet("background-color: yellow");
 
 	auto * upper_menu_center_part_layout = new QHBoxLayout(upper_menu_center_part_widget);
@@ -35,6 +37,8 @@ Play_menu::Play_menu(QWidget *parent)
 	time_label = new QLabel("Час: 0:00");
 	errors_label = new QLabel("Помилок: 0 / 3");
 	hints_label = new QLabel("Підказок: 0 / 3");
+
+
 
 	//difficulty_label->setStyleSheet("background-color: white");
 	//time_label->setStyleSheet("background-color: red");
@@ -51,7 +55,7 @@ Play_menu::Play_menu(QWidget *parent)
 
 
 	// Це пустота
-	auto * upper_menu_right_part_widget = new QWidget(upper_menu_part);
+	auto * upper_menu_right_part_widget = new QWidget;
 	//upper_menu_right_part_widget->setStyleSheet("background-color: yellow");
 
 
@@ -105,8 +109,9 @@ Play_menu::Play_menu(QWidget *parent)
 
 	auto * lower_menu_part_layout = new QHBoxLayout(lower_menu_part);
 
-	auto * notepad_mode_button = new QPushButton("Блокнот вимкнено", lower_menu_part);
-	auto * hint_button = new QPushButton("Підказки", lower_menu_part);
+	auto * notepad_mode_button = new QPushButton("Блокнот вимкнено");
+	auto * hint_button = new QPushButton("Підказки");
+
 
 	lower_menu_part_layout->addWidget(notepad_mode_button, 0, Qt::AlignRight);
 	lower_menu_part_layout->addWidget(hint_button, 0, Qt::AlignLeft);
@@ -451,16 +456,12 @@ void Play_menu::load_game()
 void Play_menu::set_inactive_number_button(int number)
 {
 	numbers_button[number - 1]->setEnabled(false);	
-	//numbers_button[number - 1]->setStyleSheet("QPushButton { color: gray; font-size: 36px }");	
-	
 }
 
 void Play_menu::set_default_number_button()
 {
 	for (int number = 0; number < 9; number++)
 	{
-		//numbers_button[number]->setStyleSheet("QPushButton { color: black; font-size: 36px }"
-											  //"QPushButton:hover { color: #555555; }");
 		numbers_button[number]->setEnabled(true);
 	}
 }
