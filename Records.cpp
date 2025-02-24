@@ -5,7 +5,6 @@
 Records::Records(QWidget* parent)
 	: QWidget(parent), current_difficulty(hard), current_category(everything_included), hints_allowed(false), errors_allowed(false)
 {
-	setStyleSheet("Records { background-image: url(Зображення/Шпалери головного меню.png); }");
 	records = QList<QList<QList<Record>>>(4, QList<QList<Record>>(4));
 
 	auto* main_layout = new QVBoxLayout(this);

@@ -5,8 +5,6 @@
 Main_menu::Main_menu(QWidget* parent)
 	: QWidget(parent)
 {
-	setStyleSheet("Main_menu { background-image: url(Зображення/Шпалери головного меню.png); }");
-
 	auto* main_menu_layout = new QVBoxLayout(this);
 
 	game_name = new QLabel("Судоку");

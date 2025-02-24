@@ -3,7 +3,6 @@
 Settings_menu::Settings_menu(QWidget *parent)
 	: QWidget(parent), fill_candidates(false), remove_candidates (true)
 {
-	setStyleSheet("Settings_menu { background-image: url(Зображення/Шпалери головного меню.png); }");
 	auto * main_layout = new QVBoxLayout(this);
 	
 
@@ -143,7 +142,7 @@ void Settings_menu::create_themes()
 {
 	Theme white;
 	white.background_color = "#ffffff";
-	white.background = "Зображення/Шпалери головного меню.png";
+	white.background = "Зображення/Білий фон.png";
 
 	white.field = "#ffffff";
 	white.field_border = "#000000";
