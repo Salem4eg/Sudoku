@@ -22,10 +22,9 @@ public slots:
 	void continue_game();
 	void show_main_menu();
 	void show_records_menu();
-	void show_appearance_menu();
+	void show_settings_menu();
 
 	void change_theme(Theme theme);
-	void change_text_size(Text_size size);
 public:
 	GUI(QWidget* parent = nullptr);
 	~GUI();

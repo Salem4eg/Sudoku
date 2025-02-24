@@ -13,13 +13,13 @@ Main_menu::Main_menu(QWidget* parent)
 	play_button = new QPushButton("Грати");
 	continue_game_button = new QPushButton("Продовжити гру");
 	personal_best_button = new QPushButton("Особисті рекорди");
-	appearance_button = new QPushButton("Налаштування");
+	settings_button = new QPushButton("Налаштування");
 	exit_button = new QPushButton("Вийти");
 
 	connect(play_button, &QPushButton::pressed, [=]() { emit play_new_game(); });
 	connect(continue_game_button, &QPushButton::pressed, [=]() { emit continue_game(); });
 	connect(personal_best_button, &QPushButton::pressed, [=]() { emit show_personal_recods(); });
-	connect(appearance_button, &QPushButton::pressed, [=]() { emit show_appearance_menu(); });
+	connect(settings_button, &QPushButton::pressed, [=]() { emit show_settings_menu(); });
 	connect(exit_button, &QPushButton::pressed, [=]() { emit close_program(); });
 
 
@@ -32,7 +32,7 @@ Main_menu::Main_menu(QWidget* parent)
 	main_menu_layout->addWidget(play_button, 0, Qt::AlignHCenter);
 	main_menu_layout->addWidget(continue_game_button, 0,Qt::AlignHCenter);
 	main_menu_layout->addWidget(personal_best_button, 0,Qt::AlignHCenter);
-	main_menu_layout->addWidget(appearance_button, 0,Qt::AlignHCenter);
+	main_menu_layout->addWidget(settings_button, 0,Qt::AlignHCenter);
 	main_menu_layout->addWidget(exit_button, 0,Qt::AlignHCenter);
 	main_menu_layout->addStretch(4);
 }

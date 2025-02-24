@@ -22,7 +22,7 @@ signals:
 	void play_new_game();
 	void continue_game();
 	void show_personal_recods();
-	void show_appearance_menu();
+	void show_settings_menu();
 	void close_program();
 
 protected:
@@ -33,6 +33,6 @@ private:
 	QPushButton * play_button;
 	QPushButton * continue_game_button;
 	QPushButton * personal_best_button;
-	QPushButton * appearance_button;
+	QPushButton * settings_button;
 	QPushButton * exit_button;
 };
