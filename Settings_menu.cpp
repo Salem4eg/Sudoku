@@ -124,6 +124,7 @@ Settings_menu::Settings_menu(QWidget *parent)
 	create_themes();
 
 	current_theme = themes[0];
+	change_theme();
 }
 
 Settings_menu::~Settings_menu()
@@ -160,34 +161,41 @@ void Settings_menu::create_themes()
 
 
 	Theme black;
-	black.background_color = "#000000";
+	black.background_color = "#2a2f42";
 	black.background = "Зображення/Чорний фон.png";
 
 	black.field = "white";
-	black.field_border = "white";
+	black.field_border = "black";
 
-	black.regular_text = "white";
+	black.regular_text = "#aeb4d5";
 	black.hovered_text = "#555555";
 	black.inactive_text = "gray";
 
-	black.regular_cell = "#171717";
+	black.regular_cell = "#2a2f42";
 	black.wrong_cell = "#fd8989";
-	black.highlighted_cell = "#262424";
-	black.highlighted_active_cell = "#c8c8c8";
-	black.highlighted_candidate = "#88ffff";
+	black.highlighted_cell = "#1f212e";
+	black.highlighted_active_cell = "#242f6d";
+	black.highlighted_candidate = "#273376";
 
 
 
 	Theme pink;
-	pink.background_color = "#ffffff";
-	pink.background = "Зображення/Шпалери головного меню.png";
+	pink.background_color = "#ffe0f0";
+	pink.background = "Зображення/Рожевий фон.png";
 
-	pink.field = "#ffffff";
-	pink.field_border = "#ffffff";
+	pink.field = "#ffe0f0";
+	pink.field_border = "#c64886";
 
-	pink.regular_text = "#000000";
-	pink.hovered_text = "#555555";
-	pink.inactive_text = "gray";
+	pink.regular_text = "#a34473";
+	pink.hovered_text = "#805a6f";
+	pink.inactive_text = "#8c687a";
+
+	pink.regular_cell = "#ffe0f0";
+	pink.wrong_cell = "#e02727";
+	pink.highlighted_cell = "#ffbbde";
+	pink.highlighted_active_cell = "#ff70c1";
+	pink.highlighted_candidate = "#ffb3da";
+
 
 	themes.push_back(white);
 	themes.push_back(black);

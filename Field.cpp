@@ -11,6 +11,12 @@ Field::Field(QWidget* parent)
 
 	outline->setStyleSheet("border: 2px solid black");
 
+	connect(this, &Field::theme_changed, [=](Theme theme)
+		{
+			outline->setStyleSheet("border: 2px solid " + theme.field_border.name() + ";"
+								   "border-radius: 5px;");
+		});
+
 	auto * out_line_layout = new QVBoxLayout(outline);
 
 	out_line_layout->setSpacing(0);
@@ -37,7 +43,8 @@ Field::Field(QWidget* parent)
 
 			connect(this, &Field::theme_changed, [=](Theme theme)
 				{
-					box_widget->setStyleSheet("border: 2px solid " + theme.field_border.name() + ";");
+					box_widget->setStyleSheet("border: 2px solid " + theme.field_border.name() + ";"
+											  "border-radius: 0px;");
 				});
 
 			auto * box_layout = new QGridLayout(box_widget);
