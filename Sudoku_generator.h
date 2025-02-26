@@ -23,7 +23,7 @@ public:
 	// Створює поле судоку
 	bool generate();
 	// Приховує частину чисел з поля
-	void createPuzzle(int empty_pairs);
+	void createPuzzle(int completed_numbers);
 
 	QList<QList<int>>& get_uncompleted_sudoku()
 	{

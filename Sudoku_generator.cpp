@@ -81,9 +81,11 @@ bool Sudoku_generator::generate()
 }
 
 
-void Sudoku_generator::createPuzzle(int empty_pairs)
+void Sudoku_generator::createPuzzle(int completed_numbers)
 {
 	uncompleted_sudoku = completed_sudoku;
+
+	int empty_pairs = (81 - completed_numbers) / 2;
 
 	for (int i = 0; i < empty_pairs; i++)
 	{
