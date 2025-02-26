@@ -204,7 +204,11 @@ void Field::fill_candidates()
 			for (int number = 1; number <= 9; number++)
 			{
 				if (is_valid_candidate(number, row, col))
+				{
 					field[row][col]->add_candidate(number);
+
+					cells_by_candidate[number].push_back(field[row][col]);
+				}
 			}
 		}
 	}
@@ -518,7 +522,7 @@ void Field::highlight_number(int number)
 		cell->highlight_number(number);
 }
 
-void Field::fill_candidates_at_start(bool fill)
+void Field::toggle_fill_candidates_at_start(bool fill)
 {
 	auto_fill_candidates_at_start = fill;
 }

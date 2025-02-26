@@ -18,7 +18,7 @@ public slots:
 	void toggle_notepad_mode();
 	void change_theme(Theme theme);
 	void highlight_number(int number);
-	void fill_candidates_at_start(bool fill);
+	void toggle_fill_candidates_at_start(bool fill);
 	void remove_invalid_candidates(bool remove);
 	void lock_field(bool lock);
 signals:
