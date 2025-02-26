@@ -6,6 +6,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QApplication>
+#include <QDialog>
+#include <QDialogButtonBox>
 
 #include "Records.h"
 #include "Main_menu.h"
@@ -45,4 +47,6 @@ private:
 
 	Text_size text_size;
 	Theme current_theme;
+
+	QDialog * set_difficulty_dialog;
 };
