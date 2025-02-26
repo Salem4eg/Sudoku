@@ -210,7 +210,6 @@ Play_menu::~Play_menu()
 
 void Play_menu::start_game(Difficulties game_difficulty)
 {
-	fill_field();
 
 	time_elapsed = 0;
 	update_time_label();
@@ -223,6 +222,8 @@ void Play_menu::start_game(Difficulties game_difficulty)
 
 	difficulty = game_difficulty;
 	update_difficulty_label();
+
+	fill_field();
 
 	timer->start(1000);
 
@@ -327,7 +328,7 @@ void Play_menu::update_difficulty_label()
 		difficulty_label->setText("Складність: легка");
 		break;
 	case Difficulties::normal:
-		difficulty_label->setText("Складність: нормальна");
+		difficulty_label->setText("Складність: звичайна");
 		break;
 	case Difficulties::hard:
 		difficulty_label->setText("Складність: складна");
@@ -386,15 +387,44 @@ void Play_menu::fill_field()
 
 	generator.generate();
 
+	int completed_numbers;
+
+	switch (difficulty)
+	{
+	case easy:
+		completed_numbers = 34;
+		break;
+	case normal:
+		completed_numbers = 31;
+		break;
+	case hard:
+		completed_numbers = 29;
+		break;
+	case ultra_hard:
+		completed_numbers = 26;
+		break;
+	default:
+		break;
+	}
+
 	int tries = 0;
 	do
 	{
-		if (tries > 250)
-			break;
+		if (tries > 1000)
+			throw std::runtime_error("Too many tries to generate a sudoku");
 
-		generator.createPuzzle(25);
+		generator.createPuzzle(completed_numbers);
+
 		solver.load_puzzle(generator.get_uncompleted_sudoku());
-		solver.solve();
+
+		if (difficulty == Difficulties::easy)
+			solver.solve_with_easy_techniques();
+		else if (difficulty == Difficulties::normal)
+			solver.solve_with_normal_techniques();
+		else if (difficulty == Difficulties::hard)
+			solver.solve_with_hard_techniques();
+
+		tries++;
 	}while(!solver.isSolved());
 
 	field->set_numbers(generator.get_completed_sudoku(), generator.get_uncompleted_sudoku());
@@ -424,7 +454,7 @@ void Play_menu::save_game()
 
 void Play_menu::fill_candidates_at_start(bool fill)
 {
-	field->fill_candidates_at_start(fill);
+	field->toggle_fill_candidates_at_start(fill);
 }
 
 void Play_menu::remove_invalid_candidates(bool remove)

@@ -47,8 +47,11 @@ public:
 	bool isValid(int row, int col, int number, const QList<QList<int>>& field) const;
 	bool isSolved();
 
-private:
+	bool solve_with_easy_techniques();
+	bool solve_with_normal_techniques();
+	bool solve_with_hard_techniques();
 
+private:
 
 	void clear_row_and_col(int row, int col, int number);
 	void clear_row(int row, int number);

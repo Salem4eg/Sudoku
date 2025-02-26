@@ -5,12 +5,39 @@
 void Solver::solve()
 {
 	while (single_candidate() || single_position() || candidate_lines() ||
-			double_pairs() || naked_pair() || hidden_numbers() || x_wings() || swordfish() || jellyfish() ||
-			xy_wing() || xyz_wing())
-	{
-	}
+				double_pairs() || naked_pair() || hidden_numbers() || x_wings() || swordfish() || jellyfish() || 
+			simple_chains() || xy_wing() || xyz_wing())
+		{
+		}
 }
 
+bool Solver::solve_with_easy_techniques()
+{
+	while (single_candidate() || single_position() || candidate_lines())
+	{}
+
+	return isSolved();
+}
+
+bool Solver::solve_with_normal_techniques()
+{
+	while (single_candidate() || single_position() || candidate_lines() ||
+			double_pairs() || naked_pair() || hidden_numbers())
+	{}
+
+	return isSolved();
+}
+
+bool Solver::solve_with_hard_techniques()
+{
+	while (single_candidate() || single_position() || candidate_lines() ||
+				double_pairs() || naked_pair() || hidden_numbers() || x_wings() || swordfish() || jellyfish() || 
+			simple_chains() || xy_wing() || xyz_wing())
+		{
+		}
+
+	return isSolved();
+}
 
 bool Solver::isValid(int row, int col, int number, const QList<QList<int>>& field) const
 {

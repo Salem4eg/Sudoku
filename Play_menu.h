@@ -61,6 +61,8 @@ private:
 	void set_inactive_number_button(int number);
 	void set_default_number_button();
 
+	
+
 	Field * field;
 
 	Result * result_window;
