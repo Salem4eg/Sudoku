@@ -10,7 +10,6 @@ Settings_menu::Settings_menu(QWidget *parent)
 
 	auto * back_button = new QPushButton("Вийти");
 	back_button->setStyleSheet("font-size: 24px");
-	buttons.push_back(back_button);
 
 	auto * settings_label = new QLabel("Налаштування");
 	settings_label->setStyleSheet("font-size: 30px");
@@ -26,13 +25,11 @@ Settings_menu::Settings_menu(QWidget *parent)
 	help_label->setStyleSheet("font-size: 24px");
 	labels.push_back(help_label);
 
-	auto * fill_candidates_button = new QPushButton("Заповнення кандидатів на початку гри - Вимкнено");
+	fill_candidates_button = new QPushButton("Заповнення кандидатів на початку гри - Вимкнено");
 	fill_candidates_button->setStyleSheet("font-size: 18px;");
-	buttons.push_back(fill_candidates_button);
 
-	auto * remove_invalid_candidates_button = new QPushButton("Стирання кандидатів, що вже не підходять - Увімкнено");
+	remove_invalid_candidates_button = new QPushButton("Стирання кандидатів, що вже не підходять - Увімкнено");
 	remove_invalid_candidates_button->setStyleSheet("font-size: 18px");
-	buttons.push_back(remove_invalid_candidates_button);
 
 	fill_candidates_button->setFlat(true);
 	remove_invalid_candidates_button->setFlat(true);
@@ -52,9 +49,6 @@ Settings_menu::Settings_menu(QWidget *parent)
 	black_theme->setStyleSheet("font-size: 18px");
 	pink_theme->setStyleSheet("font-size: 18px");
 
-	buttons.push_back(white_theme);
-	buttons.push_back(black_theme);
-	buttons.push_back(pink_theme);
 
 	center_layout->addWidget(help_label, 1, Qt::AlignHCenter);
 	center_layout->addWidget(fill_candidates_button, 1, Qt::AlignHCenter);
@@ -72,29 +66,8 @@ Settings_menu::Settings_menu(QWidget *parent)
 	main_layout->addStretch(1);
 	main_layout->addLayout(center_layout, 9);
 
-	connect(fill_candidates_button, &QPushButton::pressed, this, [=]()
-		{
-			fill_candidates = !fill_candidates;
-
-			if (fill_candidates)
-				fill_candidates_button->setText("Заповнення кандидатів на початку гри - Увімкнено");
-			else
-				fill_candidates_button->setText("Заповнення кандидатів на початку гри - Вимкнено");
-			
-			emit fill_candidates_at_start(fill_candidates);
-		});
-
-	connect(remove_invalid_candidates_button, &QPushButton::pressed, this, [=]()
-		{
-			remove_candidates = !remove_candidates ;
-
-			if (remove_candidates )
-				remove_invalid_candidates_button->setText("Стирання кандидатів, що вже не підходять - Увімкнено");
-			else
-				remove_invalid_candidates_button->setText("Стирання кандидатів, що вже не підходять - Вимкнено");
-
-			emit remove_invalid_candidates(remove_candidates);
-		});
+	connect(fill_candidates_button, &QPushButton::pressed, this, &Settings_menu::toggle_fill_candidates_button);
+	connect(remove_invalid_candidates_button, &QPushButton::pressed, this, &Settings_menu::toggle_remove_candidates_button);
 
 
 	connect(white_theme, &QPushButton::pressed, [=]()
@@ -122,8 +95,7 @@ Settings_menu::Settings_menu(QWidget *parent)
 
 	create_themes();
 
-	current_theme = themes[0];
-	change_theme();
+	load_settings();
 }
 
 Settings_menu::~Settings_menu()
@@ -141,6 +113,7 @@ void Settings_menu::paintEvent(QPaintEvent * event)
 void Settings_menu::create_themes()
 {
 	Theme white;
+	white.name = "white";
 	white.background_color = "#ffffff";
 	white.background = "Зображення/Білий фон.png";
 
@@ -160,6 +133,7 @@ void Settings_menu::create_themes()
 
 
 	Theme black;
+	black.name = "black";
 	black.background_color = "#2a2f42";
 	black.background = "Зображення/Чорний фон.png";
 
@@ -179,6 +153,7 @@ void Settings_menu::create_themes()
 
 
 	Theme pink;
+	pink.name = "pink";
 	pink.background_color = "#ffe0f0";
 	pink.background = "Зображення/Рожевий фон.png";
 
@@ -204,6 +179,76 @@ void Settings_menu::create_themes()
 Theme Settings_menu::get_current_theme()
 {
 	return current_theme;
+}
+
+void Settings_menu::toggle_fill_candidates_button()
+{
+	fill_candidates = !fill_candidates;
+
+	if (fill_candidates)
+		fill_candidates_button->setText("Заповнення кандидатів на початку гри - Увімкнено");
+	else
+		fill_candidates_button->setText("Заповнення кандидатів на початку гри - Вимкнено");
+	
+	emit fill_candidates_at_start(fill_candidates);
+}
+
+void Settings_menu::toggle_remove_candidates_button()
+{
+	remove_candidates = !remove_candidates;
+
+	if (remove_candidates )
+		remove_invalid_candidates_button->setText("Стирання кандидатів, що вже не підходять - Увімкнено");
+	else
+		remove_invalid_candidates_button->setText("Стирання кандидатів, що вже не підходять - Вимкнено");
+
+	emit remove_invalid_candidates(remove_candidates);
+}
+
+void Settings_menu::load_settings()
+{
+	if (game_info.is_settings_file_empty())
+	{
+		current_theme = themes[0];
+		change_theme();
+		return;
+	}
+
+	QString theme_name;
+	bool fill;
+	bool remove;
+
+	game_info.load_settings(fill, remove, theme_name);
+
+	if (theme_name == "black")
+	{
+		emit theme_changed(themes[1]);
+		current_theme = themes[1];
+	}
+	else if (theme_name == "pink")
+	{
+		emit theme_changed(themes[2]);
+		current_theme = themes[2];
+	}
+	else
+	{
+		emit theme_changed(themes[0]);
+		current_theme = themes[0];
+	}
+
+	change_theme();
+
+	if (fill != fill_candidates)
+		toggle_fill_candidates_button();
+
+	if (remove != remove_candidates)
+		toggle_remove_candidates_button();
+
+}
+
+void Settings_menu::save_settings()
+{
+	game_info.save_settings(fill_candidates, remove_candidates, current_theme.name);
 }
 
 void Settings_menu::change_theme()

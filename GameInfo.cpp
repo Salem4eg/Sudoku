@@ -2,7 +2,7 @@
 #include <QTextStream>
 
 
-GameInfo::GameInfo() : records_filename("records.txt"), saved_game_filename("saved_game.txt")
+GameInfo::GameInfo() : records_filename("records.txt"), saved_game_filename("saved_game.txt"), settings_filename("settings.txt")
 {
 
 }
@@ -89,6 +89,22 @@ bool GameInfo::is_saved_game_file_empty()
 	return is_empty;
 }
 
+bool GameInfo::is_settings_file_empty()
+{
+	data.setFileName(settings_filename);
+
+	data.open(QIODevice::ReadOnly | QIODevice::Text);
+
+	bool is_empty = false;
+
+	if (data.size() == 0)
+		is_empty = true;
+
+	data.close();
+
+	return is_empty;
+}
+
 void GameInfo::load_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& notes, Record& record, QList<QList<int>>& completed_field)
 {
 	data.setFileName(saved_game_filename);
@@ -162,6 +178,27 @@ void GameInfo::load_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& n
 	data.close();
 }
 
+void GameInfo::load_settings(bool& fill_candidates, bool& remove_candidates, QString& theme_name)
+{
+	data.setFileName(settings_filename);
+
+	data.open(QIODevice::ReadOnly | QIODevice::Text);
+
+	QTextStream in(&data);
+
+	QString fill;
+	QString remove;
+
+	in >> fill;
+	in >> remove;
+	in >> theme_name;
+
+	fill_candidates = fill == "1";
+	remove_candidates = remove == "1";
+
+	data.close();
+}
+
 void GameInfo::save_records(QList<QList<QList<Record>>> records)
 {
 	data.setFileName(records_filename);
@@ -186,6 +223,21 @@ void GameInfo::save_records(QList<QList<QList<Record>>> records)
 		}
 		category_index++;
 	}
+
+	data.close();
+}
+
+void GameInfo::save_settings(bool fill_candidates, bool remove_candidates, QString theme_name)
+{
+	data.setFileName(settings_filename);
+
+	data.open(QIODevice::WriteOnly | QIODevice::Text);
+
+	QTextStream out(&data);
+
+	out << fill_candidates << " ";
+	out << remove_candidates << " ";
+	out << theme_name << "\n";
 
 	data.close();
 }

@@ -9,6 +9,7 @@
 #include <QStyleOption>
 #include <QPainter>
 
+#include "GameInfo.h"
 #include "Structures.h"
 
 class Settings_menu : public QWidget
@@ -20,6 +21,7 @@ public:
 	~Settings_menu();
 
 	Theme get_current_theme();
+	void save_settings();
 
 signals:
 	void theme_changed(Theme theme);
@@ -31,14 +33,23 @@ protected:
 	void paintEvent(QPaintEvent * event);
 
 private:
+	void toggle_fill_candidates_button();
+	void toggle_remove_candidates_button();
+
+	void load_settings();
+
 	void create_themes();
 	void change_theme();
 	bool fill_candidates;
 	bool remove_candidates;
 
 	QList<Theme> themes;
-	QList<QPushButton *> buttons;
 	QList<QLabel *> labels;
 
+	QPushButton * fill_candidates_button;
+	QPushButton * remove_invalid_candidates_button;
+
 	Theme current_theme;
+
+	GameInfo game_info;
 };

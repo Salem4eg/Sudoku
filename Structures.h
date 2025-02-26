@@ -33,6 +33,7 @@ struct Record
 
 struct Theme
 {
+	QString name;
 	QColor regular_text;
 	QColor hovered_text;
 	QColor inactive_text;
