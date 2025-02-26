@@ -5,12 +5,12 @@
 Records::Records(QWidget* parent)
 	: QWidget(parent), current_difficulty(hard), current_category(everything_included), hints_allowed(false), errors_allowed(false)
 {
+	setFont(QFont("Comic Sans Ms"));
 	records = QList<QList<QList<Record>>>(4, QList<QList<Record>>(4));
 
 	auto* main_layout = new QVBoxLayout(this);
 
 	auto* upper_part = new QWidget;
-	//upper_part->setStyleSheet("background-color: gray");
 	auto* upper_part_layout = new QHBoxLayout(upper_part);
 
 	auto* quit_button = new QPushButton("Вийти");
@@ -24,19 +24,14 @@ Records::Records(QWidget* parent)
 	upper_part_layout->addWidget(free_space, 1);
 
 	auto* central_part = new QWidget;
-	//central_part->setStyleSheet("background-color: gray");
 	auto* central_part_layout = new QHBoxLayout(central_part);
 
 	auto* show_options = new QWidget;
-	//show_options->setStyleSheet("background-color: gray");
 	auto* show_options_layout = new QVBoxLayout(show_options);
 
 	auto* change_difficulty = new QPushButton("Складність: складна");
-	//change_difficulty->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	auto* toggle_errors = new QPushButton("Без помилок");
-	//toggle_errors->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	auto* toggle_hints = new QPushButton("Без підказок");
-	//toggle_hints->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	auto* options_free_space = new QWidget;
 
 
@@ -49,7 +44,6 @@ Records::Records(QWidget* parent)
 	show_options_layout->setSpacing(20);
 
 	auto* records = new QWidget;
-	//records->setStyleSheet("background-color: white");
 	auto* records_layout = new QVBoxLayout(records);
 
 	auto* records_labels = new QWidget;
@@ -101,7 +95,7 @@ Records::Records(QWidget* parent)
 			int difficulty = current_difficulty;
 			difficulty++;
 
-			if (difficulty > 3)
+			if (difficulty > Difficulties::hard)
 				difficulty = 0;
 
 			current_difficulty = static_cast<Difficulties>(difficulty);
@@ -170,7 +164,6 @@ void Records::paintEvent(QPaintEvent * event)
 void Records::add_record(const Record& record)
 {
 	auto* record_widget = new QWidget;
-	//record_widget->setStyleSheet("background-color: red");
 	record_widget->setFixedHeight(50);
 
 	auto* record_layout = new QHBoxLayout(record_widget);
@@ -243,7 +236,7 @@ void Records::change_current_records()
 
 		std::sort(all_records.begin(), all_records.end());
 
-		for (int i = 0; i <= 10; i++)
+		for (int i = 0; i < all_records.size() && i <= 10; i++)
 			add_record(all_records[i]);	
 
 		return;
@@ -259,7 +252,7 @@ void Records::change_current_records()
 
 	std::sort(all_records.begin(), all_records.end());
 
-	for (int i = 0; i <= 10; i++)
+	for (int i = 0; i < all_records.size() && i <= 10; i++)
 		add_record(all_records[i]);	
 
 }
