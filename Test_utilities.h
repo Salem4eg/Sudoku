@@ -14,8 +14,8 @@ public:
 	void load_test(QList<QList<int>> test_field, QList<QList<QList<int>>> notes)
 	{
 		clear();
+
 		auto field = get_cells();
-	
 		for (int row = 0; row < 9; row++)
 		{
 			for (int col = 0; col < 9; col++)
