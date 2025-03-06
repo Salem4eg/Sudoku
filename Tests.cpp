@@ -5,7 +5,28 @@
 
 
 
+Theme get_theme()
+{
+	Theme white;
+	white.name = "white";
+	white.background_color = "#ffffff";
+	white.background = "Зображення/Білий фон.png";
 
+	white.field = "#ffffff";
+	white.field_border = "#000000";
+
+	white.regular_text = "#000000";
+	white.hovered_text = "#555555";
+	white.inactive_text = "gray";
+
+	white.regular_cell = "white";
+	white.wrong_cell = "#fd8989";
+	white.highlighted_cell = "#ebebeb";
+	white.highlighted_active_cell = "#c8c8c8";
+	white.highlighted_candidate = "#88ffff";
+
+	return white;
+}
 
 
 Test_result::Test_result(QWidget* parent) : QMainWindow(parent)
@@ -22,9 +43,14 @@ Test_result::Test_result(QWidget* parent) : QMainWindow(parent)
 
 	test = new Field_test(test_window);
 
+	auto * test_label = new QLabel("asdf");
+	test_layout->addWidget(test_label);
+
+	test->setFixedSize(670,670);
 	test_layout->addWidget(test);
 	test_window->setMinimumSize(test->sizeHint());
 
+	test->change_theme(get_theme());
 
 
 	expected_window = new QMainWindow(window);
@@ -36,7 +62,8 @@ Test_result::Test_result(QWidget* parent) : QMainWindow(parent)
 	expected_layout->addWidget(expected);
 	expected_window->setMinimumSize(expected->sizeHint());
 
-
+	expected->change_theme(get_theme());
+	expected->setFixedSize(670, 670);
 
 	result_window = new QMainWindow(window);
 	result_window->setWindowTitle("Кінцевий результат");
@@ -47,6 +74,9 @@ Test_result::Test_result(QWidget* parent) : QMainWindow(parent)
 	result_layout->addWidget(result);
 
 	result_window->setMinimumSize(result->sizeHint());
+
+	result->change_theme(get_theme());
+	result->setFixedSize(670, 670);
 }
 
 void Test_result::closeEvent(QEvent* event)
@@ -375,6 +405,80 @@ void Testing_algorithms::test_wxyz_wing()
 
 		QList<QList<QList<int>>> expected_to_remove{ 9, QList<QList<int>>(9, QList<int>(9, 0)) };
 		expected_to_remove[3][1] = { 9 };
+		auto result_test = solver.get_notes();
+
+		add_test(numbers, notes, expected_to_remove, numbers, result_test, ";3");
+	}
+}
+
+void Testing_algorithms::test_naked_candidates()
+{
+
+}
+auto get_hidden_candidates_test_1_numbers()
+{
+	QList<QList<int>> numbers
+	{
+		{ 4, 0, 0,		0, 0, 0,	 9, 3, 8 },
+		{ 0, 3, 2,		0, 9, 4,	 1, 0, 0 },
+		{ 0, 9, 5,		3, 0, 0,	 2, 4, 0 },
+
+		{ 3, 7, 0,		6, 0, 9,	 0, 0, 4 },
+		{ 5, 2, 9,		0, 0, 1,	 6, 7, 3 },
+		{ 6, 0, 4,		7, 0, 3,	 0, 9, 0 },
+
+		{ 9, 5, 7,		0, 0, 8,	 3, 0, 0 },
+		{ 0, 0, 3,		9, 0, 0,	 4, 0, 0 },
+		{ 2, 4, 0,		0, 3, 0,	 7, 0, 9 }
+	};
+
+	return numbers;
+}
+
+auto get_hidden_candidates_test_1_notes()
+{
+	QList<QList<QList<int>>> notes
+	{
+		{ {   }, { 1,6 }, { 1,6 },		 { 1,2,5 }, { 1,2,5,6,7 }, { 2,5,6,7 },		 {   }, {   }, {   }, },
+		{ { 7,8 }, {   }, {   },		 { 5,8 }, {   }, {   },		 {   }, { 5,6 }, { 5,7,6 }, },
+		{ { 1,7,8 }, {   }, {   },		 {   }, { 1,6,7,8 }, { 7,6 },		 {   }, {   }, {  7,6 }, },
+
+		{ {   }, {   }, { 1,8 },		 {   }, { 2,5,8 }, {   },		 { 5,8 }, { 1,2,5,8 }, {   }, },
+		{ {   }, {   }, {   },		 { 4,8 }, { 4,8 }, {   },		 {   }, {   }, {   }, },
+		{ {   }, { 1,8 }, {   },		 {   }, { 2,5,8 }, {   },		 { 5,8 }, {   }, { 1,2,5 }, },
+
+		{ {   }, {   }, {   },		 { 1,2,4 }, { 1,2,4,6 }, {   },		 {   }, { 1,2,6 }, { 1,2,6 }, },
+		{ { 1,8 }, { 1,6,8 }, {   },		 {   }, { 1,2,5,6,7 }, { 2,5,6,7 },		 {   }, { 1,2,5,6,8 }, { 1,2,5,6 }, },
+		{ {   }, {   }, { 1,6,8 },		 { 1,5 }, {   }, { 5,6 },		 {   }, { 1,5,6,8 }, {   }, },
+	};
+
+	return notes;
+}
+
+void Testing_algorithms::test_hidden_candidates()
+{
+	Solver_test solver;
+
+	QList<QList<int>> numbers;
+	QList<QList<QList<int>>> notes;
+
+
+	{
+		numbers = get_hidden_candidates_test_1_numbers();
+		notes = get_hidden_candidates_test_1_notes();
+
+		solver.load_test(notes);
+
+		while (solver.hidden_numbers())
+		{
+		}
+
+		QList<QList<QList<int>>> expected_to_remove{ 9, QList<QList<int>>(9, QList<int>(9, 0)) };
+		expected_to_remove[0][3] = { 1 };
+		expected_to_remove[0][4] = { 1, 6 };
+		expected_to_remove[0][5] = { 6 };
+		expected_to_remove[2][0] = { 1,7 };
+		expected_to_remove[2][4] = { 6,7 };
 		auto result_test = solver.get_notes();
 
 		add_test(numbers, notes, expected_to_remove, numbers, result_test, ";3");

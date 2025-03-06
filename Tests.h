@@ -55,6 +55,9 @@ public:
 	*/
 	void check_with_random_generated_tests();
 	
+	void test_naked_candidates();
+	void test_hidden_candidates();
+
 	void test_x_wing();
 	void test_swordfish();
 	void test_jellyfish();
