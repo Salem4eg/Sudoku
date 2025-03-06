@@ -13,30 +13,107 @@ void Solver::solve()
 
 bool Solver::solve_with_easy_techniques()
 {
-	while (single_candidate() || single_position() || candidate_lines())
-	{}
+	bool used_easy_techniques = false;
 
-	return isSolved();
+	bool used_easy_techniques_this_cycle;
+
+	do
+	{
+		used_easy_techniques_this_cycle = false;
+
+		if (use_easy_techniques())
+		{
+			used_easy_techniques_this_cycle = true;
+			used_easy_techniques = true;
+		}
+
+	}while (used_easy_techniques_this_cycle);
+
+	return isSolved() && used_easy_techniques;
 }
 
 bool Solver::solve_with_normal_techniques()
 {
-	while (single_candidate() || single_position() || candidate_lines() ||
-			double_pairs() || naked_pair() || hidden_numbers())
-	{}
+	bool used_normal_techniques = false;
 
-	return isSolved();
+	bool used_easy_techniques_this_cycle;
+	bool used_normal_techniques_this_cycle;
+
+	do
+	{
+		used_easy_techniques_this_cycle = false;
+		used_normal_techniques_this_cycle = false;
+
+		if (use_easy_techniques())
+		{
+			used_easy_techniques_this_cycle = true;
+			continue;
+		}
+
+		if (use_normal_techniques())
+		{
+			used_normal_techniques = true;
+			used_normal_techniques_this_cycle = true;
+		}
+
+	}while (used_easy_techniques_this_cycle || used_normal_techniques_this_cycle);
+
+	return isSolved() && used_normal_techniques;
 }
 
 bool Solver::solve_with_hard_techniques()
 {
-	while (single_candidate() || single_position() || candidate_lines() ||
-				double_pairs() || naked_pair() || hidden_numbers() || x_wings() || swordfish() || jellyfish() || 
-			simple_chains() || xy_wing() || xyz_wing())
+	bool used_hard_techniques = false;
+
+	bool used_easy_techniques_this_cycle;
+	bool used_normal_techniques_this_cycle;
+	bool used_hard_techniques_this_cycle;
+
+	do
+	{
+		used_easy_techniques_this_cycle = false;
+		used_normal_techniques_this_cycle = false;
+		used_hard_techniques_this_cycle = false;
+
+		if (use_easy_techniques())
 		{
+			used_easy_techniques_this_cycle = true;
+			continue;
 		}
 
-	return isSolved();
+		if (use_normal_techniques())
+		{
+			used_normal_techniques_this_cycle = true;
+			continue;
+		}
+
+		if (use_hard_techniques())
+		{
+			used_hard_techniques = true;
+			used_hard_techniques_this_cycle = true;
+		}
+
+	} while (used_easy_techniques_this_cycle || used_normal_techniques_this_cycle || used_hard_techniques_this_cycle);
+
+				
+	return isSolved() && used_hard_techniques;
+}
+
+bool Solver::use_easy_techniques()
+{
+	return single_candidate() || single_position() || candidate_lines();
+}
+
+bool Solver::use_normal_techniques()
+{
+	return single_candidate() || single_position() || candidate_lines() ||
+		double_pairs() || naked_pair() || hidden_numbers();
+}
+
+bool Solver::use_hard_techniques()
+{
+	return x_wings() || swordfish() || jellyfish() ||
+		simple_chains() || xy_wing() || xyz_wing();
 }
 
 bool Solver::isValid(int row, int col, int number, const QList<QList<int>>& field) const

@@ -50,8 +50,11 @@ public:
 	bool solve_with_easy_techniques();
 	bool solve_with_normal_techniques();
 	bool solve_with_hard_techniques();
-
 private:
+
+	bool use_easy_techniques();
+	bool use_normal_techniques();
+	bool use_hard_techniques();
 
 	void clear_row_and_col(int row, int col, int number);
 	void clear_row(int row, int number);
