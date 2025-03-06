@@ -9,14 +9,11 @@ Play_menu::Play_menu(QWidget *parent)
 
 	// верхня частина екрану
 	auto * upper_menu_part = new QWidget(this);
-
 	auto * upper_menu_part_layout = new QHBoxLayout(upper_menu_part);
 
 
 	// Тут кнопка переходу до головного меню
 	auto * upper_menu_left_part_widget = new QWidget;
-	//upper_menu_left_part_widget->setStyleSheet("background-color: yellow");
-
 	auto * upper_menu_left_part_layout = new QHBoxLayout(upper_menu_left_part_widget);
 
 	auto * back_button = new QPushButton("Вийти");
@@ -27,8 +24,6 @@ Play_menu::Play_menu(QWidget *parent)
 
 	// Тут час, складність, помилки
 	auto * upper_menu_center_part_widget = new QWidget;
-	//upper_menu_center_part_widget->setStyleSheet("background-color: yellow");
-
 	auto * upper_menu_center_part_layout = new QHBoxLayout(upper_menu_center_part_widget);
 
 
@@ -40,12 +35,6 @@ Play_menu::Play_menu(QWidget *parent)
 
 
 
-	//difficulty_label->setStyleSheet("background-color: white");
-	//time_label->setStyleSheet("background-color: red");
-	//errors_label->setStyleSheet("background-color: white");
-	//hints_label->setStyleSheet("background-color: red");
-
-
 	upper_menu_center_part_layout->addStretch(3);
 	upper_menu_center_part_layout->addWidget(difficulty_label, 1, Qt::AlignHCenter);
 	upper_menu_center_part_layout->addWidget(time_label, 1, Qt::AlignHCenter);
@@ -54,14 +43,11 @@ Play_menu::Play_menu(QWidget *parent)
 	upper_menu_center_part_layout->addStretch(3);
 
 
-	// Це пустота
-	auto * upper_menu_right_part_widget = new QWidget;
-	//upper_menu_right_part_widget->setStyleSheet("background-color: yellow");
 
 
 	upper_menu_part_layout->addWidget(upper_menu_left_part_widget, 1);
 	upper_menu_part_layout->addWidget(upper_menu_center_part_widget, 7);
-	upper_menu_part_layout->addWidget(upper_menu_right_part_widget, 1);
+	upper_menu_part_layout->addStretch(1);
 
 
 
@@ -69,8 +55,6 @@ Play_menu::Play_menu(QWidget *parent)
 
 	// центральна частина
 	auto * center_menu_part = new QWidget;
-	//center_menu_part->setStyleSheet("background-color: gray");
-
 	auto * center_menu_part_layout = new QVBoxLayout(center_menu_part);
 
 	field = new Field(center_menu_part);
@@ -93,8 +77,8 @@ Play_menu::Play_menu(QWidget *parent)
 				field->highlight_number(number);
 			});
 
-		numbers_layout->addWidget(number_button, 0, Qt::AlignCenter);
 
+		numbers_layout->addWidget(number_button, 0, Qt::AlignCenter);
 		numbers_button.push_back(number_button);
 	}
 
@@ -105,8 +89,6 @@ Play_menu::Play_menu(QWidget *parent)
 
 	// нижня частина
 	auto * lower_menu_part = new QWidget;
-	//lower_menu_part->setStyleSheet("background-color: gray");
-
 	auto * lower_menu_part_layout = new QHBoxLayout(lower_menu_part);
 
 	auto * notepad_mode_button = new QPushButton("Блокнот вимкнено");
@@ -382,6 +364,18 @@ bool Play_menu::has_saved_game()
 
 void Play_menu::fill_field()
 {
+	QPair<QList<QList<int>>, QList<QList<int>>> sudoku_and_solution;
+
+	if (difficulty == Difficulties::easy || difficulty == Difficulties::normal)
+		sudoku_and_solution = generate_sudoku();
+	else
+		sudoku_and_solution = game_info.get_hard_sudoku();
+
+	field->set_numbers(sudoku_and_solution.first, sudoku_and_solution.second);
+}
+
+QPair<QList<QList<int>>, QList<QList<int>>> Play_menu::generate_sudoku()
+{
 	Sudoku_generator generator;
 	Solver solver;
 
@@ -396,12 +390,6 @@ void Play_menu::fill_field()
 		break;
 	case normal:
 		completed_numbers = 31;
-		break;
-	case hard:
-		completed_numbers = 29;
-		break;
-	case ultra_hard:
-		completed_numbers = 26;
 		break;
 	default:
 		break;
@@ -421,15 +409,12 @@ void Play_menu::fill_field()
 			solver.solve_with_easy_techniques();
 		else if (difficulty == Difficulties::normal)
 			solver.solve_with_normal_techniques();
-		else if (difficulty == Difficulties::hard)
-			solver.solve_with_hard_techniques();
 
 		tries++;
 	}while(!solver.isSolved());
 
-	field->set_numbers(generator.get_completed_sudoku(), generator.get_uncompleted_sudoku());
+	return { generator.get_completed_sudoku(), generator.get_uncompleted_sudoku() };
 }
-
 
 void Play_menu::change_theme(Theme theme)
 {

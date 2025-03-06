@@ -41,6 +41,8 @@ signals:
 private:
 	void fill_field();
 
+	QPair<QList<QList<int>>, QList<QList<int>>> generate_sudoku();
+
 	void increase_time();
 	void update_time_label();
 
