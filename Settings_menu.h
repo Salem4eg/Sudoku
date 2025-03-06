@@ -22,6 +22,7 @@ public:
 
 	Theme get_current_theme();
 	void save_settings();
+	void load_settings();
 
 signals:
 	void theme_changed(Theme theme);
@@ -36,7 +37,6 @@ private:
 	void toggle_fill_candidates_button();
 	void toggle_remove_candidates_button();
 
-	void load_settings();
 
 	void create_themes();
 	void change_theme();

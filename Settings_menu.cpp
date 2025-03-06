@@ -94,8 +94,6 @@ Settings_menu::Settings_menu(QWidget *parent)
 	connect(back_button, &QPushButton::pressed, this, &Settings_menu::leave);
 
 	create_themes();
-
-	load_settings();
 }
 
 Settings_menu::~Settings_menu()
