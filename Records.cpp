@@ -86,8 +86,6 @@ Records::Records(QWidget* parent)
 	load_records();
 	change_category();
 
-	// Зробити зв'язок з кнопками, щоб без помилок, без підказок, складність були зв'язані з лямбда-функціями, які змінять складність/дозвіл, і використають change_current_records()
-	// для дозволів додатково використати change_category() перед change_current_records()
 	connect(quit_button, &QPushButton::pressed, this, &Records::leave);
 
 	connect(change_difficulty, &QPushButton::pressed, [=]()
