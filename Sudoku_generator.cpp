@@ -2,9 +2,6 @@
 #include <QMessageBox>
 
 
-//Створювач судоку створює готове судоку й на основі нього робить головоломку зі заданою складністю, яку визначає вирішувач судоку.
-
-
 bool Sudoku_generator::isValid(int row, int col, int number)
 {
 	for (int c = 0; c < size; c++)
