@@ -1,5 +1,6 @@
-#include "GameInfo.h"
+﻿#include "GameInfo.h"
 #include <QTextStream>
+#include <QRandomGenerator>
 
 
 GameInfo::GameInfo() : records_filename("records.txt"), saved_game_filename("saved_game.txt"), settings_filename("settings.txt")
@@ -103,6 +104,47 @@ bool GameInfo::is_settings_file_empty()
 	data.close();
 
 	return is_empty;
+}
+
+QPair<QList<QList<int>>, QList<QList<int>>> GameInfo::get_hard_sudoku()
+{
+	data.setFileName("hard_sudoku.txt");
+
+	data.open(QIODevice::ReadOnly | QIODevice::Text);
+
+	QTextStream in(&data);
+
+	// Один рядок займає 166 символів. 81 * 2 + 3 + 1. Рядок містить повне й не повне поле, між ними розмежовувач " | " і в кінці \n
+	int range = data.size() / 166;
+
+	int sudoku_index = QRandomGenerator::global()->bounded(0, range);
+
+	int sudoku_position_in_file = sudoku_index * 166;
+
+	data.seek(sudoku_position_in_file);
+
+	QString string = data.readLine();
+
+	QList<QList<int>> uncompleted_sudoku(9, QList<int>(9, 0));
+	QList<QList<int>> completed_sudoku(9, QList<int>(9, 0));
+
+	for (int i = 0; i < 81; i++)
+	{
+		int row = i / 9;
+		int col = i % 9;
+		uncompleted_sudoku[row][col] = string[i].digitValue();
+	}
+
+	for (int i = 0; i < 81; i++)
+	{
+		int row = i / 9;
+		int col = i % 9;
+		completed_sudoku[row][col] = string[i + 84].digitValue();
+	}
+
+	data.close();
+
+	return { completed_sudoku, uncompleted_sudoku };
 }
 
 void GameInfo::load_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& notes, Record& record, QList<QList<int>>& completed_field)
@@ -274,7 +316,6 @@ QList<Record> GameInfo::get_records()
 
 		records.push_back(record);
 	}
-
 	data.close();
 
 	return records;

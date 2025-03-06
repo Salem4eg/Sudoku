@@ -2,6 +2,8 @@
 #include "Structures.h"
 #include <QFile>
 
+
+// Клас, що відповідає за завантаження\збереження ігрової інформації
 class GameInfo
 {
 public:
@@ -14,6 +16,7 @@ public:
 	bool is_saved_game_file_empty();
 	bool is_settings_file_empty();
 
+	QPair<QList<QList<int>>,QList<QList<int>>> get_hard_sudoku();
 	void load_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& notes, Record& record, QList<QList<int>>& completed_field);
 	void load_settings(bool& fill_candidates, bool& remove_candidates, QString& theme_name);
 	QList<Record> get_records();
