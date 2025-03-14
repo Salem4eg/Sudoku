@@ -82,8 +82,6 @@ Records::Records(QWidget* parent)
 	main_layout->addWidget(upper_part, 1);
 	main_layout->addWidget(central_part, 8);
 
-
-	load_records();
 	change_category();
 
 	connect(quit_button, &QPushButton::pressed, this, &Records::leave);
@@ -295,10 +293,8 @@ void Records::get_new_record(Record record)
 
 }
 
-void Records::load_records()
+void Records::load_records(QList<Record> unfiltered_records)
 {
-	QList<Record> unfiltered_records = game_info.get_records();
-
 	for (auto& record : unfiltered_records)
 	{
 		bool has_errors = record.errors > 0;
@@ -322,9 +318,9 @@ void Records::set_difficulty(Difficulties difficulty)
 	change_current_records();
 }
 
-void Records::save_records()
+QList<QList<QList<Record>>> Records::get_records()
 {
-	game_info.save_records(records);
+	return records;
 }
 
 void Records::change_background(QString& background)

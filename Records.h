@@ -8,7 +8,6 @@
 #include <QStyleOption>
 #include <QPainter>
 #include "Structures.h"
-#include "GameInfo.h"
 
 class Records : public QWidget
 {
@@ -17,8 +16,9 @@ class Records : public QWidget
 public slots:
 	// отримувати рекорд під час гри
 	void get_new_record(Record record);
-	void save_records();
 	void change_background(QString& background);
+	QList<QList<QList<Record>>> get_records();
+	void load_records(QList<Record> unfiltered_records);
 
 signals:
 	void leave();
@@ -32,9 +32,7 @@ protected:
 
 private:
 
-	void load_records();
 	void add_record(const Record& record);
-	// Якщо в категорії пусто, то можна написати текст "Поки що тут пусто"
 	void change_current_records();
 	void clear_record_widgets();
 	void change_category();
@@ -50,6 +48,4 @@ private:
 
 	// records поділяється на складність, а складність поділяється на категорію (без помилок + без підказок, без підказок, без помилок, усі рекорди)
 	QList<QList<QList<Record>>> records;
-
-	GameInfo game_info;
 };
