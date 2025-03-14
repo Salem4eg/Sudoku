@@ -99,6 +99,7 @@
     <ClCompile Include="Records.cpp" />
     <ClCompile Include="Result.cpp" />
     <ClCompile Include="Settings_menu.cpp" />
+    <ClCompile Include="SQLite\sqlite3.c" />
     <ClCompile Include="Sudoku_generator.cpp" />
     <ClCompile Include="Solver.cpp" />
     <ClCompile Include="Sudoku_maker.cpp" />

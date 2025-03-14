@@ -3,196 +3,255 @@
 #include <QRandomGenerator>
 
 
-GameInfo::GameInfo() : records_filename("records.txt"), saved_game_filename("saved_game.txt"), settings_filename("settings.txt")
+GameInfo::GameInfo()
 {
+	sqlite3_open("database.db", &database);
+
+	create_tables();
+}
+
+GameInfo::~GameInfo()
+{
+	sqlite3_close(database);
+}
+
+void GameInfo::create_tables()
+{
+	QString create_settings_table("CREATE TABLE IF NOT EXISTS SETTINGS("
+								  "ID							INTEGER		PRIMARY KEY CHECK (ID = 1),"
+								  "FILL_CANDIDATES_AT_START		INTEGER		NOT NULL,"
+								  "AUTO_REMOVE_CANDIDATES		INTEGER		NOT NULL,"
+								  "THEME						TEXT		NOT NULL);"
+	);
+
+	char * error_message;
+
+	int result = sqlite3_exec(database, create_settings_table.toUtf8().constData(), nullptr, nullptr, &error_message);
+
+	if (result != SQLITE_OK)
+		throw std::exception("Не вдалось створити таблицю налаштувань");
+
+
+
+    QString create_saved_game_table("CREATE TABLE IF NOT EXISTS SAVED_GAME("
+                                    "ID             INTEGER      PRIMARY KEY CHECK (ID = 1),"
+                                    "NUMBERS        TEXT,"
+                                    "NOTES          TEXT,"
+                                    "SOLUTION       TEXT,"
+                                    "ELAPSED_TIME   INTEGER,"
+                                    "ERRORS         INTEGER,"
+                                    "HINTS          INTEGER,"
+                                    "DIFFICULTY     INTEGER);");
+
+    result = sqlite3_exec(database, create_saved_game_table.toUtf8().constData(), nullptr, nullptr, &error_message);
+
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось створити таблицю збереженої гри");
+
+
+    QString create_records_table("CREATE TABLE IF NOT EXISTS RECORDS("
+                                 "ELAPSED_TIME  INTEGER,"
+                                 "ERRORS        INTEGER,"
+                                 "HINTS         INTEGER,"
+                                 "DIFFICULTY    INTEGER);");
+
+    result = sqlite3_exec(database, create_records_table.toUtf8().constData(), nullptr, nullptr, &error_message);
+
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось створити таблицю рекордів");
+
+
+    QString create_hard_sudoku_table("CREATE TABLE IF NOT EXISTS HARD_SUDOKUS("
+                                     "ID        INTEGER PRIMARY KEY,"
+                                     "SUDOKU    TEXT,"
+                                     "SOLUTION  TEXT);");
+
+    result = sqlite3_exec(database, create_hard_sudoku_table.toUtf8().constData(), nullptr, nullptr, &error_message);
+
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось створити таблицю складних судоку");
 
 }
 
-void GameInfo::save_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& notes, Record record, QList<QList<int>>& completed_field)
+void GameInfo::save_settings(Settings settings)
 {
-	data.setFileName(saved_game_filename);
+    sqlite3_stmt * stmt;
 
-	data.open(QIODevice::WriteOnly | QIODevice::Text);
+    QString insert_or_replace_settings("INSERT OR REPLACE INTO SETTINGS("
+                                       "ID, FILL_CANDIDATES_AT_START, AUTO_REMOVE_CANDIDATES, THEME)"
+                                       "VALUES (1, ?, ?, ?);"
+    );
 
-	QString numbers_string;
-	numbers_string.reserve(81);
+    int result = sqlite3_prepare_v2(database, insert_or_replace_settings.toUtf8().constData(), -1, &stmt, nullptr);
 
-	for (int row = 0; row < 9; row++)
-	{
-		for (int col = 0; col < 9; col++)
-		{
-			numbers_string += QString::number((numbers[row][col]));
-		}
-	}
+    if (result != SQLITE_OK) 
+    {
+        throw std::exception("Не вдалося підготувати вираз для вставки або заміни налаштувань");
+    }
 
-	QString completed_field_string;
-	completed_field_string.reserve(81);
+    sqlite3_bind_int(stmt, 1, settings.fill_field_with_candidates_at_start);
+    sqlite3_bind_int(stmt, 2, settings.remove_invalid_candidates);
+    sqlite3_bind_text(stmt, 3, settings.theme_name.toUtf8().constData(), -1, SQLITE_TRANSIENT);
 
-	for (int row = 0; row < 9; row++)
-	{
-		for (int col = 0; col < 9; col++)
-		{
-			completed_field_string += QString::number((completed_field[row][col]));
-		}
-	}
+    result = sqlite3_step(stmt);
 
-	QString notes_string;
-	notes_string.reserve(81);
+    if (result != SQLITE_DONE) 
+    {
+        sqlite3_finalize(stmt);
+        throw std::exception("Не вдалося виконати вираз для вставки або заміни налаштувань");
+    }
 
-	for (int row = 0; row < 9; row++)
-	{
-		for (int col = 0; col < 9; col++)
-		{
-			for (int number : notes[row][col])
-			{
-				notes_string += QString::number(number);
-			}
-			notes_string += "|";
-		}
-	}
-
-
-	QTextStream out(&data);
-
-	out << numbers_string << "\n";
-	out << completed_field_string << "\n";
-	out << notes_string << "\n";
-	out << record.time << " ";
-	out << record.errors << " ";
-	out << record.hints << " ";
-	out << record.difficulty << "\n";
-
-	data.close();
+    sqlite3_finalize(stmt);
 }
 
-void GameInfo::clear_saved_game_file()
+Settings GameInfo::get_settings()
 {
-	data.setFileName(saved_game_filename);
+    QString load_settings("SELECT FILL_CANDIDATES_AT_START, AUTO_REMOVE_CANDIDATES, THEME FROM SETTINGS WHERE ID = 1;");
 
-	data.open(QIODevice::WriteOnly | QIODevice::Text);
+    sqlite3_stmt * statement;
 
-	data.close();
-}
+    int result = sqlite3_prepare_v2(database, load_settings.toUtf8().constData(), -1, &statement, 0);
 
-bool GameInfo::is_saved_game_file_empty()
-{
-	data.setFileName(saved_game_filename);
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось завантажити налаштування");
 
-	data.open(QIODevice::ReadOnly | QIODevice::Text);
+    result = sqlite3_step(statement);
 
-	bool is_empty = false;
-
-	if (data.size() == 0)
-		is_empty = true;
-
-	data.close();
-
-	return is_empty;
-}
-
-bool GameInfo::is_settings_file_empty()
-{
-	data.setFileName(settings_filename);
-
-	data.open(QIODevice::ReadOnly | QIODevice::Text);
-
-	bool is_empty = false;
-
-	if (data.size() == 0)
-		is_empty = true;
-
-	data.close();
-
-	return is_empty;
-}
-
-QPair<QList<QList<int>>, QList<QList<int>>> GameInfo::get_hard_sudoku()
-{
-	data.setFileName("hard_sudoku.txt");
-
-	data.open(QIODevice::ReadOnly | QIODevice::Text);
-
-	QTextStream in(&data);
-
-	// Один рядок займає 166 символів. 81 * 2 + 3 + 1. Рядок містить повне й не повне поле, між ними розмежовувач " | " і в кінці \n
-	int range = data.size() / 166;
-
-	int sudoku_index = QRandomGenerator::global()->bounded(0, range);
-
-	int sudoku_position_in_file = sudoku_index * 166;
-
-	data.seek(sudoku_position_in_file);
-
-	QString string = data.readLine();
-
-	QList<QList<int>> uncompleted_sudoku(9, QList<int>(9, 0));
-	QList<QList<int>> completed_sudoku(9, QList<int>(9, 0));
-
-	for (int i = 0; i < 81; i++)
+	if (result != SQLITE_ROW)
 	{
-		int row = i / 9;
-		int col = i % 9;
-		uncompleted_sudoku[row][col] = string[i].digitValue();
+		sqlite3_finalize(statement);
+		throw std::exception("Не вдалось отримати налаштування");
 	}
 
-	for (int i = 0; i < 81; i++)
-	{
-		int row = i / 9;
-		int col = i % 9;
-		completed_sudoku[row][col] = string[i + 84].digitValue();
-	}
+    Settings settings;
 
-	data.close();
+    settings.fill_field_with_candidates_at_start = sqlite3_column_int(statement, 0);
+    settings.remove_invalid_candidates = sqlite3_column_int(statement, 1);
 
-	return { completed_sudoku, uncompleted_sudoku };
+    settings.theme_name = QString::fromUtf8(reinterpret_cast<const char *>(sqlite3_column_text(statement, 2)));
+
+    sqlite3_finalize(statement);
+
+    return settings;
 }
 
-void GameInfo::load_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& notes, Record& record, QList<QList<int>>& completed_field)
+void GameInfo::save_game(const QList<QList<int>>& numbers, const QList<QList<QList<int>>>& notes, const QList<QList<int>>& solution, const Record& record)
 {
-	data.setFileName(saved_game_filename);
+    QString numbers_str;
+    QString notes_str;
+    QString solution_str;
 
-	data.open(QIODevice::ReadOnly | QIODevice::Text);
+    for (int row = 0; row < 9; row++)
+    {
+        for (int col = 0; col < 9; col++)
+        {
+            numbers_str += QString::number(numbers[row][col]);
+        }
+    }
 
-	QTextStream in(&data);
+    for (int row = 0; row < 9; row++)
+    {
+        for (int col = 0; col < 9; col++)
+        {
+            for (int number : notes[row][col])
+                notes_str += QString::number(number);
+            notes_str += "|";
+        }
+    }
 
-	QString numbers_string;
-	QString completed_field_string;
-	QString notes_string;
-	QString time;
-	QString errors;
-	QString hints;
-	QString difficulty;
+    for (int row = 0; row < 9; row++)
+    {
+        for (int col = 0; col < 9; col++)
+        {
+            solution_str += QString::number(solution[row][col]);
+        }
+    }
 
-	in >> numbers_string;
-	in >> completed_field_string;
-	in >> notes_string;
-	in >> time;
-	in >> errors;
-	in >> hints;
-	in >> difficulty;
 
-	for (int index = 0; index < 81; index++)
+    QString save_game_query("INSERT INTO SAVED_GAME (ID, NUMBERS, NOTES, SOLUTION, ELAPSED_TIME, ERRORS, HINTS, DIFFICULTY) VALUES (1, ?, ?, ?, ?, ?, ?, ?) "
+                            "ON CONFLICT(ID) DO UPDATE SET NUMBERS = excluded.NUMBERS, NOTES = excluded.NOTES, SOLUTION = excluded.SOLUTION,"
+                            "ELAPSED_TIME = excluded.ELAPSED_TIME, ERRORS = excluded.ERRORS, HINTS = excluded.HINTS, DIFFICULTY = excluded.DIFFICULTY;");
+
+    sqlite3_stmt * statement;
+
+    int result = sqlite3_prepare_v2(database, save_game_query.toUtf8().constData(), -1, &statement, nullptr);
+
+    if (result != SQLITE_OK) 
+    {
+        throw std::exception("Не вдалося підготувати вираз для вставки або заміни налаштувань");
+    }
+
+    sqlite3_bind_text(statement, 1, numbers_str.toUtf8().constData(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 2, notes_str.toUtf8().constData(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(statement, 3, solution_str.toUtf8().constData(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(statement,  4, record.time);
+    sqlite3_bind_int(statement,  5, record.errors);
+    sqlite3_bind_int(statement,  6, record.hints);
+    sqlite3_bind_int(statement,  7, record.difficulty);
+
+    result = sqlite3_step(statement);
+
+    if (result != SQLITE_DONE) 
+    {
+        sqlite3_finalize(statement);
+        throw std::exception("Не вдалося виконати вираз для вставки або заміни збереженої гри");
+    }
+
+    sqlite3_finalize(statement);
+}
+
+void GameInfo::load_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& notes, QList<QList<int>>& solution, Record& record)
+{
+    QString load_saved_game("SELECT NUMBERS, NOTES, SOLUTION, ELAPSED_TIME, ERRORS, HINTS, DIFFICULTY FROM SAVED_GAME WHERE ID = 1;");
+
+    sqlite3_stmt * statement;
+
+    int result = sqlite3_prepare_v2(database, load_saved_game.toUtf8().constData(), -1, &statement, 0);
+
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось завантажити збережену гру");
+
+    result = sqlite3_step(statement);
+
+	if (result != SQLITE_ROW)
 	{
-		int row = index / 9;
-		int col = index % 9;
-
-		numbers[row][col] = numbers_string[index].digitValue();
+		sqlite3_finalize(statement);
+		throw std::exception("Не вдалось отримати збережену гру");
 	}
 
-	for (int index = 0; index < 81; index++)
-	{
-		int row = index / 9;
-		int col = index % 9;
+    QString numbers_str = reinterpret_cast<const char *>(sqlite3_column_text(statement, 0));
+    QString notes_str = reinterpret_cast<const char *>(sqlite3_column_text(statement, 1));
+    QString solution_str = reinterpret_cast<const char *>(sqlite3_column_text(statement, 2));
 
-		completed_field[row][col] = completed_field_string[index].digitValue();
-	}
+    record.time = sqlite3_column_int(statement, 3);
+    record.errors = sqlite3_column_int(statement, 4);
+    record.hints = sqlite3_column_int(statement, 5);
+    record.difficulty = static_cast<Difficulties>(sqlite3_column_int(statement, 6));
 
-	int row = 0;
-	int col = 0;
+    sqlite3_finalize(statement);
 
-	QList<int> cell;
-	
-	for (QChar ch : notes_string)
+    for (int index = 0; index < 81; index++)
+    {
+        int row = index / 9;
+        int col = index % 9;
+
+        numbers[row][col] = numbers_str[index].digitValue();
+    }
+
+    for (int index = 0; index < 81; index++)
+    {
+        int row = index / 9;
+        int col = index % 9;
+
+        solution[row][col] = solution_str[index].digitValue();
+    }
+
+    int row = 0;
+    int col = 0;
+
+    QList<int> cell;
+
+    for (QChar ch : notes_str)
 	{
 		if (ch == '|')
 		{
@@ -212,111 +271,202 @@ void GameInfo::load_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& n
 		cell.push_back(ch.digitValue());
 	}
 
-	record.time = time.toInt();
-	record.errors = errors.toInt();
-	record.hints = hints.toInt();
-	record.difficulty = Difficulties(difficulty.toInt());
-
-	data.close();
 }
 
-void GameInfo::load_settings(bool& fill_candidates, bool& remove_candidates, QString& theme_name)
+void GameInfo::save_records(const QList<QList<QList<Record>>>& records)
 {
-	data.setFileName(settings_filename);
+    clear_records();
 
-	data.open(QIODevice::ReadOnly | QIODevice::Text);
-
-	QTextStream in(&data);
-
-	QString fill;
-	QString remove;
-
-	in >> fill;
-	in >> remove;
-	in >> theme_name;
-
-	fill_candidates = fill == "1";
-	remove_candidates = remove == "1";
-
-	data.close();
+    for (const auto& difficulty : records)
+    {
+        for (const auto& category : difficulty)
+        {
+            for (const auto& record : category)
+                save_record(record);
+        }
+    }
 }
 
-void GameInfo::save_records(QList<QList<QList<Record>>> records)
+void GameInfo::save_record(const Record& record)
 {
-	data.setFileName(records_filename);
+    QString save_records_query("INSERT INTO RECORDS (ELAPSED_TIME, ERRORS, HINTS, DIFFICULTY) VALUES (?,?,?,?)");
 
-	data.open(QIODevice::WriteOnly | QIODevice::Text);
+    sqlite3_stmt * statement;
 
-	QTextStream out(&data);
+    int result = sqlite3_prepare_v2(database, save_records_query.toUtf8().constData(), -1, &statement, nullptr);
 
-	for (auto& difficulty : records)
-	{
-		int category_index = 0;
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось підготувати збереження рекорду");
 
-		for (auto& category : difficulty)
-		{
-			for (auto& record : category)
-			{
-				out << record.time << " ";
-				out << record.errors << " ";
-				out << record.hints << " ";
-				out << record.difficulty << "\n";
-			}
-		}
-		category_index++;
-	}
+    sqlite3_bind_int(statement, 1, record.time);
+    sqlite3_bind_int(statement, 2, record.errors);
+    sqlite3_bind_int(statement, 3, record.hints);
+    sqlite3_bind_int(statement, 4, record.difficulty);
 
-	data.close();
-}
+    result = sqlite3_step(statement);
 
-void GameInfo::save_settings(bool fill_candidates, bool remove_candidates, QString theme_name)
-{
-	data.setFileName(settings_filename);
+    sqlite3_finalize(statement);
 
-	data.open(QIODevice::WriteOnly | QIODevice::Text);
+    if (result != SQLITE_DONE) 
+    {
+        throw std::exception("Не вдалося виконати вираз для вставки рекорду");
+    }
 
-	QTextStream out(&data);
-
-	out << fill_candidates << " ";
-	out << remove_candidates << " ";
-	out << theme_name << "\n";
-
-	data.close();
 }
 
 QList<Record> GameInfo::get_records()
 {
-	QList<Record> records;
+    QString get_records_query("SELECT * FROM RECORDS");
 
-	data.setFileName(records_filename);
+    sqlite3_stmt * statement;
 
-	data.open(QIODevice::ReadOnly | QIODevice::Text);
+    QList<Record> records;
 
-	QTextStream in(&data);
+    int result = sqlite3_prepare_v2(database, get_records_query.toUtf8().constData(), -1, &statement, nullptr);
+    
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалося підготувати запит для отримання рекордів");
 
-	while (!in.atEnd())
-	{
-		Record record;
+    while (sqlite3_step(statement) == SQLITE_ROW) 
+    {
+        Record record;
 
-		in >> record.time;
+        record.time = sqlite3_column_int(statement, 0);       
+        record.errors = sqlite3_column_int(statement, 1);     
+        record.hints = sqlite3_column_int(statement, 2);      
+        record.difficulty = static_cast<Difficulties>(sqlite3_column_int(statement, 3)); 
 
-		if (in.status() != QTextStream::Ok)
-			break;
+        records.push_back(record);
+    }
 
-		in >> record.errors;
-		in >> record.hints;
+    sqlite3_finalize(statement);
 
-		int difficulty;
-		in >> difficulty;
+    return records;
+}
 
-		if (difficulty >= 0 && difficulty <= 3)
-			record.difficulty = static_cast<Difficulties>(difficulty);
-		else
-			record.difficulty = easy;
+void GameInfo::clear_saved_game()
+{
+    QString clear_saved_game_query("DELETE FROM SAVED_GAME");
 
-		records.push_back(record);
-	}
-	data.close();
+    char * error_message;
+    int result = sqlite3_exec(database, clear_saved_game_query.toUtf8().constData(), nullptr, nullptr, &error_message);
 
-	return records;
+    if (result != SQLITE_OK)
+        throw std::exception(error_message);
+}
+
+bool GameInfo::has_saved_game()
+{
+    const char * query = "SELECT * FROM SAVED_GAME";
+
+    sqlite3_stmt * statement;
+    int result = sqlite3_prepare_v2(database, query, -1, &statement, nullptr);
+    
+    if (result != SQLITE_OK) 
+    {
+        throw std::runtime_error("Не вдалося підготувати запит для перевірки таблиці");
+    }
+    
+    result = sqlite3_step(statement);
+    sqlite3_finalize(statement);
+    
+    return (result == SQLITE_ROW);
+}
+
+bool GameInfo::has_settings()
+{
+     const char * query = "SELECT COUNT(*) FROM SETTINGS;";
+
+    sqlite3_stmt * statement;
+
+    int result = sqlite3_prepare_v2(database, query, -1, &statement, nullptr);
+
+    if (result != SQLITE_OK) 
+    {
+        throw std::exception("Не вдалося підготувати запит для перевірки таблиці");
+    }
+
+    result = sqlite3_step(statement);
+
+    int count = sqlite3_column_int(statement, 0);
+    
+    sqlite3_finalize(statement);
+
+    return count != 0;
+}
+
+
+QPair<QList<QList<int>>,QList<QList<int>>> GameInfo::get_random_hard_sudoku_and_solution()
+{
+    int max_id = get_max_id();
+
+    int random_index = QRandomGenerator::global()->bounded(max_id);
+
+    QString get_sudoku_and_solution_query("SELECT SUDOKU, SOLUTION FROM HARD_SUDOKUS WHERE ID = " + QString::number(random_index) + ";");
+
+    sqlite3_stmt * statement;
+
+    int result = sqlite3_prepare_v2(database, get_sudoku_and_solution_query.toUtf8().constData(), -1, &statement, nullptr);
+
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось підготувати запит отримання випадкового судоку та його рішення");
+
+    sqlite3_step(statement);
+
+    QString sudoku_str = QString::fromUtf8(reinterpret_cast<const char *>(sqlite3_column_text(statement, 0)));
+    QString solution_str = QString::fromUtf8(reinterpret_cast<const char *>(sqlite3_column_text(statement, 1)));
+
+    sqlite3_finalize(statement);
+
+    auto sudoku = get_array_from_string(sudoku_str);
+    auto solution = get_array_from_string(solution_str);
+
+    return { solution, sudoku };
+}
+
+int GameInfo::get_max_id()
+{
+    QString get_range("SELECT MAX(ID) FROM HARD_SUDOKUS;");
+
+    sqlite3_stmt * statement;
+
+    int result = sqlite3_prepare_v2(database, get_range.toUtf8().constData(), -1 ,&statement, nullptr);
+
+    if (result != SQLITE_OK)
+    {
+        throw std::exception("Не вдалось підготувати запит отримання максимального ID");
+    }
+
+    sqlite3_step(statement);
+
+    int max_id = sqlite3_column_int(statement, 0);
+
+    sqlite3_finalize(statement);
+
+    return max_id;
+}
+
+QList<QList<int>> GameInfo::get_array_from_string(QString& string)
+{
+    QList<QList<int>> array(9, QList<int>(9,0));
+
+    for (int index = 0; index < 81; index++)
+    {
+        int row = index / 9;
+        int col = index % 9;
+
+        array[row][col] = string[index].digitValue();
+    }
+
+    return array;
+}
+
+void GameInfo::clear_records()
+{
+    QString clear("DELETE FROM RECORDS;");
+
+    int result = sqlite3_exec(database, clear.toUtf8().constData(), nullptr, nullptr, nullptr);
+
+    if (result != SQLITE_OK)
+        throw std::exception("Не вдалось очистити рекорди");
 }
