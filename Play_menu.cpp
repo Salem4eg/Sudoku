@@ -131,13 +131,10 @@ Play_menu::Play_menu(QWidget *parent)
 
 	connect(back_button, &QPushButton::pressed, [=]() 
 		{ 
-			if (need_to_save_game)
-			{
-				emit game_saved(true);
-				save_game();
-			}
+			if (has_unfinished_game)
+				emit need_to_save_game(true);
 			else
-				emit game_saved(false);
+				emit need_to_save_game(false);
 
 			emit leave();
 		});
@@ -192,7 +189,6 @@ Play_menu::~Play_menu()
 
 void Play_menu::start_game(Difficulties game_difficulty)
 {
-
 	time_elapsed = 0;
 	update_time_label();
 
@@ -205,12 +201,15 @@ void Play_menu::start_game(Difficulties game_difficulty)
 	difficulty = game_difficulty;
 	update_difficulty_label();
 
-	fill_field();
+	if (game_difficulty == Difficulties::easy || game_difficulty == Difficulties::normal)
+		fill_field(generate_sudoku());
+	else if (game_difficulty == Difficulties::hard)
+		emit request_new_hard_sudoku();
 
 	timer->start(1000);
 
 	notepad_mode = false;
-	need_to_save_game = true;
+	has_unfinished_game = true;
 
 	set_default_number_button();
 
@@ -228,7 +227,7 @@ void Play_menu::continue_game()
 	timer->start(1000);
 
 	notepad_mode = false;
-	need_to_save_game = true;
+	has_unfinished_game = true;
 
 	emit game_finished(false);
 	emit field_ready();
@@ -327,10 +326,10 @@ void Play_menu::game_lost()
 
 	Record result(time_elapsed, errors, hints, difficulty);
 
-	emit game_saved(false);
+	emit need_to_save_game(false);
 	emit game_finished(true);
 	
-	need_to_save_game = false;
+	has_unfinished_game = false;
 
 	result_window->show_lost();
 }
@@ -342,36 +341,17 @@ void Play_menu::game_won()
 	Record result(time_elapsed, errors, hints, difficulty);
 
 	emit new_record(result);
-	emit game_saved(false);
+	emit need_to_save_game(false);
 	emit game_finished(true);
 
-	need_to_save_game = false;
+	has_unfinished_game = false;
 
 	result_window->show_won(result);
 }
 
-bool Play_menu::has_saved_game()
+void Play_menu::fill_field(QPair<QList<QList<int>>, QList<QList<int>>> solution_and_sudoku)
 {
-	if (game_info.is_saved_game_file_empty())
-		return false;
-
-	need_to_save_game = true;
-
-	load_game();
-
-	return true;
-}
-
-void Play_menu::fill_field()
-{
-	QPair<QList<QList<int>>, QList<QList<int>>> sudoku_and_solution;
-
-	if (difficulty == Difficulties::easy || difficulty == Difficulties::normal)
-		sudoku_and_solution = generate_sudoku();
-	else
-		sudoku_and_solution = game_info.get_hard_sudoku();
-
-	field->set_numbers(sudoku_and_solution.first, sudoku_and_solution.second);
+	field->set_numbers(solution_and_sudoku.first, solution_and_sudoku.second);
 }
 
 QPair<QList<QList<int>>, QList<QList<int>>> Play_menu::generate_sudoku()
@@ -422,19 +402,22 @@ void Play_menu::change_theme(Theme theme)
 	result_window->change_theme(theme);
 }
 
-void Play_menu::save_game()
+void Play_menu::get_saved_game(QList<QList<int>>& numbers, QList<QList<QList<int>>>& notes, QList<QList<int>>& completed_field, Record& stats)
 {
-	// need_to_save_game залежить від того, чи гравець вже пройшов судоку
-	if (!need_to_save_game)
-	{
-		game_info.clear_saved_game_file();
+	// has_unfinished_game залежить від того, чи гравець вже пройшов судоку
+	if (!has_unfinished_game)
 		return;
-	}
 
 	auto numbers_and_notes = field->get_field();
-	auto completed_field = field->get_completed_field();
+	completed_field = field->get_completed_field();
 
-	game_info.save_game(numbers_and_notes.first, numbers_and_notes.second, { time_elapsed, errors, hints, difficulty }, completed_field);
+	numbers = numbers_and_notes.first;
+	notes = numbers_and_notes.second;
+
+	stats.time = time_elapsed;
+	stats.errors = errors;
+	stats.hints = hints;
+	stats.difficulty = difficulty;
 }
 
 void Play_menu::fill_candidates_at_start(bool fill)
@@ -448,24 +431,16 @@ void Play_menu::remove_invalid_candidates(bool remove)
 }
 
 
-void Play_menu::load_game()
+void Play_menu::load_game(QList<QList<int>> numbers, QList<QList<QList<int>>> notes, QList<QList<int>> completed_field, Record stats)
 {
 	set_default_number_button();
 
-	QList<QList<int>> numbers { 9, QList<int>(9,0)};
-	QList<QList<int>> completed_field { 9, QList<int>(9,0)};
-	QList<QList<QList<int>>> notes { 9, QList<QList<int>>(9, QList<int>(9,0)) };
-
-	Record record;
-
-	game_info.load_game(numbers, notes, record, completed_field);
-
 	field->load_field(numbers, notes, completed_field);
 
-	time_elapsed = record.time;
-	errors = record.errors;
-	hints = record.hints;
-	difficulty = record.difficulty;
+	time_elapsed = stats.time;
+	errors = stats.errors;
+	hints = stats.hints;
+	difficulty = stats.difficulty;
 }
 
 void Play_menu::set_inactive_number_button(int number)
