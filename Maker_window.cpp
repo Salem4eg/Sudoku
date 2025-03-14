@@ -31,7 +31,7 @@ Maker_window::Maker_window() : finished_threads(0), tries(1000), completed_numbe
 
 	timer->start(1000);
 
-	required_difficulty = Difficulties::normal;
+	required_difficulty = Difficulties::hard;
 
 	generate_sudokus();
 }
