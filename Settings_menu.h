@@ -21,8 +21,9 @@ public:
 	~Settings_menu();
 
 	Theme get_current_theme();
-	void save_settings();
-	void load_settings();
+	Settings get_settings();
+	void load_settings(Settings settings);
+	void set_default_theme();
 
 signals:
 	void theme_changed(Theme theme);
@@ -50,6 +51,4 @@ private:
 	QPushButton * remove_invalid_candidates_button;
 
 	Theme current_theme;
-
-	GameInfo game_info;
 };

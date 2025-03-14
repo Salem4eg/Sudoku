@@ -203,27 +203,20 @@ void Settings_menu::toggle_remove_candidates_button()
 	emit remove_invalid_candidates(remove_candidates);
 }
 
-void Settings_menu::load_settings()
+void Settings_menu::set_default_theme()
 {
-	if (game_info.is_settings_file_empty())
-	{
-		current_theme = themes[0];
-		change_theme();
-		return;
-	}
+	current_theme = themes[0];
+	change_theme();
+}
 
-	QString theme_name;
-	bool fill;
-	bool remove;
-
-	game_info.load_settings(fill, remove, theme_name);
-
-	if (theme_name == "black")
+void Settings_menu::load_settings(Settings settings)
+{
+	if (settings.theme_name == "black")
 	{
 		emit theme_changed(themes[1]);
 		current_theme = themes[1];
 	}
-	else if (theme_name == "pink")
+	else if (settings.theme_name == "pink")
 	{
 		emit theme_changed(themes[2]);
 		current_theme = themes[2];
@@ -236,17 +229,17 @@ void Settings_menu::load_settings()
 
 	change_theme();
 
-	if (fill != fill_candidates)
+	if (settings.fill_field_with_candidates_at_start != fill_candidates)
 		toggle_fill_candidates_button();
 
-	if (remove != remove_candidates)
+	if (settings.remove_invalid_candidates != remove_candidates)
 		toggle_remove_candidates_button();
 
 }
 
-void Settings_menu::save_settings()
+Settings Settings_menu::get_settings()
 {
-	game_info.save_settings(fill_candidates, remove_candidates, current_theme.name);
+	return { current_theme.name, fill_candidates, remove_candidates };
 }
 
 void Settings_menu::change_theme()
