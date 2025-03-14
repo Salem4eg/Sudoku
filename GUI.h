@@ -14,6 +14,7 @@
 #include "Play_menu.h"
 #include "Settings_menu.h"
 #include "Tests.h"
+#include "GameInfo.h"
 
 class GUI : public QMainWindow
 {
@@ -49,4 +50,8 @@ private:
 	Theme current_theme;
 
 	QDialog * set_difficulty_dialog;
+
+	GameInfo game_info;
+
+	bool has_saved_game;
 };
