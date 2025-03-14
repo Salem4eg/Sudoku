@@ -3,6 +3,8 @@
 #include <QPair>
 #include <QSet>
 
+#include <QMessageBox>
+
 
 enum Difficulties
 {
@@ -49,6 +51,13 @@ struct Theme
 
 	QColor background_color;
 	QString background;
+};
+
+struct Settings
+{
+	QString theme_name;
+	bool fill_field_with_candidates_at_start;
+	bool remove_invalid_candidates;
 };
 
 enum Text_size
