@@ -1,4 +1,6 @@
 C++ version of Sudoku made using Qt and SQLite
 
-![Main menu](https://github.com/user-attachments/assets/01e9f391-93dd-457e-b5bf-8451a6d94849)
-![Playing sudoku](https://github.com/user-attachments/assets/040d0b69-2c2e-499a-92be-6818daf7a5e6)
+![Main menu](https://github.com/user-attachments/assets/4b6da7aa-2497-4a32-b591-009e2256e57a)
+![Gameplay](https://github.com/user-attachments/assets/37692edb-664a-4250-87e3-ef10b31ba441)
+![Records](https://github.com/user-attachments/assets/689bef48-046b-4469-b0a4-999acb6bc72f)
+![Settings](https://github.com/user-attachments/assets/64cb8443-26fe-48ed-a19f-6b180f001605)
